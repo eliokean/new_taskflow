@@ -1,0 +1,183 @@
+<div class="projects-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Projects</h1>
+      <p>Manage your projects and tasks in a Kanban board</p>
+    </div>
+    <button class="btn-new" (click)="openNewProject()">+ New Project</button>
+  </div>
+
+  <!-- Project Cards Grid -->
+  <div class="projects-grid">
+
+    @for (project of projectService.projects(); track project.id) {
+      <div class="project-card" [style.border-top-color]="project.color">
+
+        <!-- Card Header -->
+        <div class="card-header">
+          <div class="card-title-row">
+            <h2>{{ project.title }}</h2>
+            <div class="card-actions">
+              <button class="btn-delete" (click)="deleteProject(project.id)" title="Delete project">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                  <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+                </svg>
+              </button>
+              <button class="btn-more" title="More options">⋮</button>
+            </div>
+          </div>
+          <p class="card-description">{{ project.description }}</p>
+
+          <div class="card-meta">
+            <div class="members">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" width="16" height="16">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+              <div class="avatars">
+                @for (member of project.members; track member.initials; let i = $index) {
+                  <div class="avatar" [style.background]="member.color" [style.z-index]="project.members.length - i">
+                    {{ member.initials }}
+                  </div>
+                }
+              </div>
+            </div>
+            <span class="task-count">{{ project.tasks.length }} tasks</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Kanban Columns -->
+        <div class="kanban-body">
+
+          <!-- To Do -->
+          <div class="column">
+            <div class="column-label todo">To Do ({{ getTasksByStatus(project, 'to-do').length }})</div>
+            @for (task of getTasksByStatus(project, 'to-do'); track task.id) {
+              <div class="task-card">
+                <div class="task-title">{{ task.title }}</div>
+                <div class="task-footer">
+                  <div class="task-avatar" [style.background]="task.assignee.color">{{ task.assignee.initials }}</div>
+                  @if (task.priority) {
+                    <span class="priority" [ngClass]="'priority-' + task.priority.toLowerCase()">{{ task.priority }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- In Progress -->
+          <div class="column">
+            <div class="column-label in-progress">In Progress ({{ getTasksByStatus(project, 'in-progress').length }})</div>
+            @for (task of getTasksByStatus(project, 'in-progress'); track task.id) {
+              <div class="task-card active">
+                <div class="task-title">{{ task.title }}</div>
+                <div class="task-footer">
+                  <div class="task-avatar" [style.background]="task.assignee.color">{{ task.assignee.initials }}</div>
+                  @if (task.priority) {
+                    <span class="priority" [ngClass]="'priority-' + task.priority.toLowerCase()">{{ task.priority }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Completed -->
+          <div class="column">
+            <div class="column-label completed">Completed ({{ getTasksByStatus(project, 'completed').length }})</div>
+            @for (task of getTasksByStatus(project, 'completed'); track task.id) {
+              <div class="task-card done">
+                <div class="task-title done-text">{{ task.title }}</div>
+                <div class="task-footer">
+                  <div class="task-avatar" [style.background]="task.assignee.color">{{ task.assignee.initials }}</div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Add Task -->
+          <button class="btn-add-task" (click)="openAddTask(project.id)">
+            <span>+</span> Add Task
+          </button>
+
+        </div>
+      </div>
+    }
+
+    <!-- Empty Add Card -->
+    <div class="project-card-empty" (click)="openNewProject()">
+      <span class="plus-icon">+</span>
+      <span>New Project</span>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- New Project Modal -->
+@if (showNewProjectModal()) {
+  <div class="modal-overlay" (click)="showNewProjectModal.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>New Project</h3>
+
+      <label>PROJECT NAME</label>
+      <input [(ngModel)]="newProjectTitle" placeholder="Enter project name..." />
+
+      <label>DESCRIPTION</label>
+      <textarea [(ngModel)]="newProjectDescription" placeholder="Project description..." rows="3"></textarea>
+
+      <label>COLOR</label>
+      <div class="color-picker">
+        @for (color of projectColors; track color) {
+          <div class="color-dot"
+               [style.background]="color"
+               [class.selected]="newProjectColor === color"
+               (click)="newProjectColor = color">
+          </div>
+        }
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="showNewProjectModal.set(false)">Cancel</button>
+        <button class="btn-submit" (click)="submitProject()">Create Project</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- New Task Modal -->
+@if (showNewTaskModal()) {
+  <div class="modal-overlay" (click)="showNewTaskModal.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Add Task</h3>
+
+      <label>TASK TITLE</label>
+      <input [(ngModel)]="newTaskTitle" placeholder="Enter task title..." />
+
+      <label>STATUS</label>
+      <select [(ngModel)]="newTaskStatus">
+        <option value="to-do">To Do</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+
+      <label>PRIORITY</label>
+      <select [(ngModel)]="newTaskPriority">
+        <option [ngValue]="null">None</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="showNewTaskModal.set(false)">Cancel</button>
+        <button class="btn-submit" (click)="submitTask()">Add Task</button>
+      </div>
+    </div>
+  </div>
+}

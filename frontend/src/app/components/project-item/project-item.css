@@ -1,0 +1,45 @@
+.project-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #1a1e28;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.project-item:hover {
+  border-color: rgba(255,255,255,0.07);
+  transform: translateX(4px);
+}
+
+.project-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.project-icon svg { width: 18px; height: 18px; }
+
+.project-icon.teal   { background: rgba(16,185,129,0.15); color: #10b981; }
+.project-icon.blue   { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.project-icon.purple { background: rgba(124,58,237,0.15); color: #a78bfa; }
+
+.project-info { flex: 1; }
+.project-name { font-size: 15px; font-weight: 600; color: #e8eaf0; margin-bottom: 4px; }
+.project-meta { font-size: 12px; color: #6b7280; }
+
+.project-bar-wrap {
+  width: 4px; height: 40px;
+  background: #0d0f14;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+.project-bar { width: 100%; border-radius: 4px; }
+.project-bar.teal   { background: #10b981; }
+.project-bar.blue   { background: #60a5fa; }
+.project-bar.purple { background: #a78bfa; }

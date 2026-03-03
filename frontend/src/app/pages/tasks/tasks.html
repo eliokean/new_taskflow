@@ -1,0 +1,233 @@
+<div class="tasks-page">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Mes Tâches</h1>
+      <p>Visualisez votre flux de travail avec des tableaux glisser-déposer. Suivez les progrès en temps réel.</p>
+    </div>
+    <button class="btn-create">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Créer une tâche
+    </button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="text" placeholder="Rechercher des tâches..." (input)="onSearch($event)" />
+    </div>
+    <div class="toolbar-actions">
+      <button class="btn-action">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        Filtrer
+      </button>
+      <button class="btn-action">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="21" y1="10" x2="3" y2="10"/>
+          <line x1="21" y1="6" x2="3" y2="6"/>
+          <line x1="21" y1="14" x2="3" y2="14"/>
+          <line x1="21" y1="18" x2="3" y2="18"/>
+        </svg>
+        Trier
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="kanban-stats">
+    <div class="ks-item">
+      <div class="ks-icon ks-icon-total">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </div>
+      <span class="ks-num">{{ taskService.total() }}</span>
+      <span class="ks-label">Total</span>
+    </div>
+    <div class="ks-divider"></div>
+    <div class="ks-item">
+      <div class="ks-icon ks-icon-todo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v4M12 16h.01"/>
+        </svg>
+      </div>
+      <span class="ks-num todo-color">{{ todoCount() }}</span>
+      <span class="ks-label">À faire</span>
+    </div>
+    <div class="ks-divider"></div>
+    <div class="ks-item">
+      <div class="ks-icon ks-icon-progress">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+      </div>
+      <span class="ks-num progress-color">{{ inProgressCount() }}</span>
+      <span class="ks-label">En cours</span>
+    </div>
+    <div class="ks-divider"></div>
+    <div class="ks-item">
+      <div class="ks-icon ks-icon-done">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <path d="M22 4L12 14.01l-3-3"/>
+        </svg>
+      </div>
+      <span class="ks-num done-color">{{ completedCount() }}</span>
+      <span class="ks-label">Terminées</span>
+    </div>
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-board">
+
+    <!-- À faire -->
+    <div class="kanban-col">
+      <div class="col-header">
+        <div class="col-title-row">
+          <span class="col-dot dot-grey"></span>
+          <span class="col-title">À faire</span>
+          <span class="col-count">{{ todoCount() }}</span>
+        </div>
+        <button class="col-add">+</button>
+      </div>
+      <div class="col-body">
+        @for (task of todoTasks(); track task.id) {
+          <div class="kanban-card">
+            <div class="kc-top">
+              <span class="kc-project">{{ task.project }}</span>
+              <span class="kc-priority" [ngClass]="getPriority(task.tag).toLowerCase()">
+                {{ getPriority(task.tag) }}
+              </span>
+            </div>
+            <div class="kc-title">{{ task.name }}</div>
+            <div class="kc-footer">
+              <div class="kc-meta">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                </svg>
+                Mar {{ task.id + 3 }}
+              </div>
+              <button class="kc-btn" (click)="toggle(task.id)" title="Marquer comme fait">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+        @if (todoTasks().length === 0) {
+          <div class="col-empty">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            <span>Aucune tâche</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- En cours -->
+    <div class="kanban-col">
+      <div class="col-header">
+        <div class="col-title-row">
+          <span class="col-dot dot-purple"></span>
+          <span class="col-title">En cours</span>
+          <span class="col-count">{{ inProgressCount() }}</span>
+        </div>
+        <button class="col-add">+</button>
+      </div>
+      <div class="col-body">
+        @for (task of inProgressTasks(); track task.id) {
+          <div class="kanban-card card-active">
+            <div class="kc-top">
+              <span class="kc-project">{{ task.project }}</span>
+              <span class="kc-priority" [ngClass]="getPriority(task.tag).toLowerCase()">
+                {{ getPriority(task.tag) }}
+              </span>
+            </div>
+            <div class="kc-title">{{ task.name }}</div>
+            <div class="kc-footer">
+              <div class="kc-meta">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                </svg>
+                Mar {{ task.id + 3 }}
+              </div>
+              <button class="kc-btn" (click)="toggle(task.id)" title="Marquer comme fait">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+        @if (inProgressTasks().length === 0) {
+          <div class="col-empty">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            <span>Aucune tâche</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Terminées -->
+    <div class="kanban-col">
+      <div class="col-header">
+        <div class="col-title-row">
+          <span class="col-dot dot-green"></span>
+          <span class="col-title">Terminées</span>
+          <span class="col-count">{{ completedCount() }}</span>
+        </div>
+        <button class="col-add">+</button>
+      </div>
+      <div class="col-body">
+        @for (task of completedTasks(); track task.id) {
+          <div class="kanban-card card-done">
+            <div class="kc-top">
+              <span class="kc-project">{{ task.project }}</span>
+              <span class="kc-done-badge">✓ Terminée</span>
+            </div>
+            <div class="kc-title done-title">{{ task.name }}</div>
+            <div class="kc-footer">
+              <div class="kc-meta">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                </svg>
+                Mar {{ task.id + 3 }}
+              </div>
+              <button class="kc-btn kc-undo" (click)="toggle(task.id)" title="Rouvrir">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                  <path d="M3 3v5h5"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+        @if (completedTasks().length === 0) {
+          <div class="col-empty">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M9 11l3 3L22 4"/>
+            </svg>
+            <span>Rien encore</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

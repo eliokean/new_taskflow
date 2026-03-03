@@ -1,0 +1,8 @@
+<div class="task-item">
+  <div class="task-check"
+       [class.done]="task.done"
+       (click)="toggle.emit(task.id)">
+  </div>
+  <span class="task-text" [class.done]="task.done">{{ task.name }}</span>
+  <span class="tag" [ngClass]="task.tag">{{ task.tag }}</span>
+</div>

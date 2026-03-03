@@ -1,0 +1,42 @@
+<div class="dashboard">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>TaskFlow</h1>
+      <p>Welcome back! Here's what's happening today.</p>
+    </div>
+    <button class="btn-new">+ New Task</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <app-stat-card label="Total Tasks" [value]="taskService.total()"     color="purple" icon="tasks" />
+    <app-stat-card label="Completed"   [value]="taskService.completed()" color="teal"   icon="check" />
+    <app-stat-card label="Overdue"     [value]="taskService.overdue()"   color="orange" icon="alert" />
+  </div>
+
+  <!-- Projects + Tasks -->
+  <div class="two-col">
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Projects</h2>
+        <button class="btn-add">+</button>
+      </div>
+      @for (project of taskService.projects(); track project.id) {
+        <app-project-item [project]="project" />
+      }
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Recent Tasks</h2>
+      </div>
+      @for (task of taskService.tasks(); track task.id) {
+        <app-task-item [task]="task" (toggle)="onToggle($event)" />
+      }
+    </div>
+
+  </div>
+</div>

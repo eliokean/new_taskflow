@@ -1,0 +1,101 @@
+<div class="team-page">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Team</h1>
+      <p>Collaborate with your team members</p>
+    </div>
+    <button class="btn-invite">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M19 8v6M22 11h-6"/>
+      </svg>
+      Invite Member
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card teal">
+      <div class="stat-label">Total Members</div>
+      <div class="stat-value">{{ totalMembers() }}</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">Online Now</div>
+      <div class="stat-value">{{ onlineCount() }}</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Active Tasks</div>
+      <div class="stat-value">{{ activeTasks() }}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Completed</div>
+      <div class="stat-value">{{ completedAll() }}</div>
+    </div>
+  </div>
+
+  <!-- Members Grid -->
+  <div class="members-grid">
+    @for (member of members(); track member.id) {
+      <div class="member-card">
+
+        <!-- Avatar -->
+        <div class="avatar-wrap">
+          <img [src]="member.avatar" [alt]="member.name" class="avatar" />
+          <span class="status-dot" [ngClass]="member.status"></span>
+          @if (member.isAdmin) {
+            <span class="admin-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#f97316" stroke="none">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </span>
+          }
+        </div>
+
+        <!-- Info -->
+        <div class="member-name">{{ member.name }}</div>
+        <div class="member-role">{{ member.role }}</div>
+
+        <!-- Stats -->
+        <div class="member-stats">
+          <div class="mini-stat">
+            <div class="mini-label">Completed</div>
+            <div class="mini-value">{{ member.completed }}</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-label">Active</div>
+            <div class="mini-value">{{ member.active }}</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="member-actions">
+          <button class="btn-email">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Email
+          </button>
+          <button class="btn-call">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+            Call
+          </button>
+          <button class="btn-more">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="5" r="1" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1" fill="currentColor"/>
+              <circle cx="12" cy="19" r="1" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    }
+  </div>
+
+</div>

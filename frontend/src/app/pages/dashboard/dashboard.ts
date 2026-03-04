@@ -1,20 +1,54 @@
-import { Component, inject } from '@angular/core';
-import { TaskService } from '../../services/task'; 
-import { StatCardComponent } from '../../components/stat-card/stat-card';
-import { ProjectItemComponent } from '../../components/project-item/project-item';
-import { TaskItemComponent } from '../../components/task-item/task-item';
+import { Component, inject, signal } from '@angular/core';
+import { TaskService, Task, Project } from '../../services/task';
+import { StatCardComponent }     from '../../components/stat-card/stat-card';
+import { ProjectItemComponent }  from '../../components/project-item/project-item';
+import { TaskItemComponent }     from '../../components/task-item/task-item';
+import { TaskModalComponent }    from '../../components/task-modal/task-modal';
+import { ProjectModalComponent } from '../../components/project-modal/project-modal';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [StatCardComponent, ProjectItemComponent, TaskItemComponent],
+  imports: [
+    StatCardComponent, ProjectItemComponent, TaskItemComponent,
+    TaskModalComponent, ProjectModalComponent,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
 export class Dashboard {
   taskService = inject(TaskService);
 
-  onToggle(id: number) {
-    this.taskService.toggleTask(id);
+  // ── état des modals ──────────────────────────────────────
+  showTaskModal    = signal(false);
+  showProjectModal = signal(false);
+  taskToEdit         = signal<Task | null>(null);
+  projectToEdit      = signal<Project | null>(null);
+  preselectedProject = signal<string | null>(null);
+
+  // ── tâches ───────────────────────────────────────────────
+  onToggle(id: number) { this.taskService.toggleTask(id); }
+
+  openCreateTask() {
+    this.taskToEdit.set(null);
+    this.preselectedProject.set(null);
+    this.showTaskModal.set(true);
+  }
+
+  openEditTask(task: Task) {
+    this.taskToEdit.set(task);
+    this.preselectedProject.set(null);
+    this.showTaskModal.set(true);
+  }
+
+  // ── projets ──────────────────────────────────────────────
+  openCreateProject() {
+    this.projectToEdit.set(null);
+    this.showProjectModal.set(true);
+  }
+
+  openEditProject(project: Project) {
+    this.projectToEdit.set(project);
+    this.showProjectModal.set(true);
   }
 }

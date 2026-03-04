@@ -1,0 +1,256 @@
+/* ── OVERLAY ───────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition: background 280ms ease;
+}
+.overlay.visible { background: rgba(0,0,0,.72); }
+
+/* ── MODAL PANEL ───────────────────────────────── */
+.modal {
+  background: #13161e;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 24px;
+  padding: 32px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+
+  opacity: 0;
+  transform: translateY(28px) scale(.97);
+  transition: opacity 280ms cubic-bezier(.22,.68,0,1.2),
+              transform 280ms cubic-bezier(.22,.68,0,1.2);
+}
+.modal.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.modal::-webkit-scrollbar { width: 4px; }
+.modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 99px; }
+
+/* ── HEADER ────────────────────────────────────── */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+.modal-header h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: -.5px;
+}
+
+/* ── CLOSE BUTTON ──────────────────────────────── */
+.close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 200ms, transform 200ms;
+}
+.close-btn:hover {
+  background: rgba(255,255,255,.12);
+  transform: rotate(90deg);
+}
+.close-icon {
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
+  transition: color 200ms;
+}
+.close-btn:hover .close-icon { color: #f1f5f9; }
+
+/* ── FIELDS ────────────────────────────────────── */
+.field { margin-bottom: 22px; }
+.field label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+.field label svg { opacity: .7; }
+
+.input-field {
+  width: 100%;
+  background: #0d0f14;
+  border: 1.5px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  padding: 14px 18px;
+  color: #f1f5f9;
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 200ms, box-shadow 200ms;
+  box-sizing: border-box;
+}
+.input-field::placeholder { color: #4b5563; }
+.input-field:focus {
+  border-color: rgba(16,185,129,.5);
+  box-shadow: 0 0 0 3px rgba(16,185,129,.08);
+}
+.textarea { resize: none; line-height: 1.6; }
+
+/* ── COLOR SWATCHES ────────────────────────────── */
+.color-grid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.color-swatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 200ms, border-color 200ms, box-shadow 200ms;
+}
+.color-swatch:hover { transform: scale(1.1); }
+.color-swatch.active {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.15);
+  transform: scale(1.1);
+}
+.color-swatch svg { width: 20px; height: 20px; }
+
+/* ── MEMBER CHIPS ──────────────────────────────── */
+.members-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.members-grid::-webkit-scrollbar { width: 4px; }
+.members-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 99px; }
+
+.member-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #0d0f14;
+  border: 1.5px solid rgba(255,255,255,.06);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 200ms;
+  position: relative;
+  text-align: left;
+}
+.member-chip:hover { border-color: rgba(255,255,255,.16); background: #111420; }
+.member-chip.selected {
+  background: rgba(16,185,129,.06);
+  border-color: rgba(16,185,129,.3);
+}
+.member-chip.owner { cursor: default; }
+.member-chip.owner:hover { border-color: rgba(16,185,129,.3); }
+
+.chip-av {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  font-family: 'Sora', sans-serif;
+}
+.chip-info { flex: 1; min-width: 0; }
+.chip-name {
+  display: block;
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip-role {
+  display: block;
+  font-family: 'Sora', sans-serif;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.chip-check svg { width: 11px; height: 11px; }
+
+/* ── ACTIONS ───────────────────────────────────── */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.btn-cancel {
+  flex: 1;
+  padding: 13px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  color: #94a3b8;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms;
+}
+.btn-cancel:hover { background: rgba(255,255,255,.09); color: #f1f5f9; }
+.btn-save {
+  flex: 2;
+  padding: 13px 20px;
+  border-radius: 14px;
+  border: none;
+  color: #fff;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 200ms, transform 200ms;
+}
+.btn-save:hover { opacity: .9; transform: translateY(-1px); }
+.btn-save:active { transform: translateY(0); }

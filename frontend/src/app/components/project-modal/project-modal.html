@@ -1,0 +1,73 @@
+<div class="overlay" [class.visible]="visible()" (click)="dismiss()">
+  <div class="modal" [class.visible]="visible()" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>{{ editProject ? 'Edit Project' : 'New Project' }}</h2>
+      <button class="close-btn" (click)="dismiss()" aria-label="Close">
+        <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Project Name -->
+    <div class="field">
+      <label>Project Name</label>
+      <input
+        type="text"
+        [value]="name()"
+        (input)="name.set($any($event.target).value)"
+        placeholder="Enter project name..."
+        class="input-field"
+      />
+    </div>
+
+    <!-- Description -->
+    <div class="field">
+      <label>Description</label>
+      <textarea
+        [value]="description()"
+        (input)="description.set($any($event.target).value)"
+        placeholder="Add project description..."
+        class="input-field textarea"
+        rows="3"
+      ></textarea>
+    </div>
+
+    <!-- Color Picker -->
+    <div class="field">
+      <label>Project Color</label>
+      <div class="color-grid">
+        @for (c of colors; track c) {
+          <button
+            class="color-swatch"
+            [class.active]="color() === c"
+            (click)="color.set(c)"
+            aria-label="Pick color"
+          >
+            <span class="swatch-dot" [ngClass]="'bg-' + c"></span>
+            @if (color() === c) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="dismiss()">Cancel</button>
+      <button class="btn-save" (click)="save()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        {{ editProject ? 'Save Changes' : 'Create Project' }}
+      </button>
+    </div>
+
+  </div>
+</div>

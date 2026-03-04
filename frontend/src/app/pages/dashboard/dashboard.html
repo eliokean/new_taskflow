@@ -6,7 +6,7 @@
       <h1>TaskFlow</h1>
       <p>Welcome back! Here's what's happening today.</p>
     </div>
-    <button class="btn-new">+ New Task</button>
+    <button class="btn-new" (click)="openCreateTask()">+ New Task</button>
   </div>
 
   <!-- Stats -->
@@ -22,10 +22,10 @@
     <div class="section">
       <div class="section-header">
         <h2>Projects</h2>
-        <button class="btn-add">+</button>
+        <button class="btn-add" (click)="openCreateProject()">+</button>
       </div>
       @for (project of taskService.projects(); track project.id) {
-        <app-project-item [project]="project" />
+        <app-project-item [project]="project" (click)="openEditProject(project)" />
       }
     </div>
 
@@ -34,9 +34,26 @@
         <h2>Recent Tasks</h2>
       </div>
       @for (task of taskService.tasks(); track task.id) {
-        <app-task-item [task]="task" (toggle)="onToggle($event)" />
+        <app-task-item [task]="task" (toggle)="onToggle($event)" (click)="openEditTask(task)" />
       }
     </div>
 
   </div>
 </div>
+
+<!-- Modals -->
+@if (showTaskModal()) {
+  <app-task-modal
+    [task]="taskToEdit()"
+    [projectName]="preselectedProject()"
+    [mode]="taskToEdit() ? 'edit' : 'create'"
+    (close)="showTaskModal.set(false)"
+  />
+}
+
+@if (showProjectModal()) {
+  <app-project-modal
+    [editProject]="projectToEdit()"
+    (close)="showProjectModal.set(false)"
+  />
+}

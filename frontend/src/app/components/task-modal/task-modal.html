@@ -1,0 +1,156 @@
+<div class="overlay" [class.visible]="visible()" (click)="dismiss()">
+  <div class="modal" [class.visible]="visible()" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-left">
+        @if (currentProject()) {
+          <span class="proj-badge">{{ currentProject()!.name }}</span>
+        }
+        <h2>{{ mode === 'edit' ? 'Edit Task' : 'New Task' }}</h2>
+      </div>
+      <div class="header-right">
+        @if (mode === 'edit' && task) {
+          <button class="delete-btn" (click)="delete()" title="Delete task">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+            </svg>
+          </button>
+        }
+        <button class="close-btn" (click)="dismiss()" aria-label="Close">
+          <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="title-field">
+      <input
+        type="text"
+        [value]="name()"
+        (input)="name.set($any($event.target).value)"
+        placeholder="Enter task title..."
+        class="title-input"
+      />
+    </div>
+
+    <!-- Row 1: Project + Priority -->
+    <div class="form-grid">
+      <div class="form-group">
+        <label>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+          </svg>
+          Project
+        </label>
+        <select
+          class="select-field"
+          [value]="selProject()"
+          (change)="selProject.set($any($event.target).value)"
+        >
+          @for (p of svc.projects(); track p.id) {
+            <option [value]="p.name">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="14 2 18 6 7 17 3 17 3 13 14 2"/>
+          </svg>
+          Priority
+        </label>
+        <div class="priority-tabs">
+          @for (p of priorities; track p.value) {
+            <button
+              class="priority-tab"
+              [class.active]="priority() === p.value"
+              [style.--p-color]="p.color"
+              (click)="priority.set(p.value)"
+            >
+              <span class="p-dot" [style.background]="p.color"></span>
+              {{ p.label }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Due Date -->
+    <div class="form-grid">
+      <div class="form-group">
+        <label>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          Due Date
+        </label>
+        <input
+          type="date"
+          class="select-field"
+          [value]="dueDate()"
+          (input)="dueDate.set($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        Description
+      </label>
+      <textarea
+        class="select-field textarea"
+        [value]="description()"
+        (input)="description.set($any($event.target).value)"
+        placeholder="Add task description..."
+        rows="3"
+      ></textarea>
+    </div>
+
+    <!-- Status (edit only) -->
+    @if (mode === 'edit') {
+      <div class="form-group">
+        <label>Status</label>
+        <div class="status-tabs">
+          @for (s of statuses; track s.value) {
+            <button
+              class="status-tab"
+              [class.active]="status() === s.value"
+              [style.--s-color]="s.color"
+              (click)="status.set(s.value)"
+            >
+              <span class="s-dot" [style.background]="s.color"></span>
+              {{ s.label }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="dismiss()">Cancel</button>
+      <button class="btn-save" (click)="save()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        {{ mode === 'edit' ? 'Save Changes' : 'Create Task' }}
+      </button>
+    </div>
+
+  </div>
+</div>

@@ -8,6 +8,7 @@ import { ProjectsComponent } from './pages/project/project';
 import { LandingComponent } from './pages/landing/landing';
 import { LoginComponent } from './pages/login/login';
 import { RegisterComponent } from './pages/register/register';
+import { ProfileComponent } from './pages/profile/profile';
 import { OAuthCallbackComponent } from './pages/oauth-callback/oauth-callback.component';
 import { authGuard } from './core/auth/auth.guard';
 
@@ -31,6 +32,7 @@ export const routes: Routes = [
       { path: 'calendar',  component: CalendarComponent },
       { path: 'team',      component: TeamComponent },
       { path: 'projects',  component: ProjectsComponent },
+      { path: 'profile',   component: ProfileComponent },
     ],
   },
 

@@ -5,6 +5,7 @@ import { NgClass } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { TaskService, Task, TaskStatus, TaskPriority } from '../../services/task';
 import { ProjectService } from '../../services/project';
+import { environment } from '../../../environments/environment';
 
 interface AppUser {
   id:     number;
@@ -32,7 +33,6 @@ export class TaskModalComponent implements OnInit {
   @Input()  task:          Task | null = null;
   @Input()  projectName:   string | null = null;
   @Input()  mode:          'create' | 'edit' = 'create';
-  // Quand fourni, le select projet est remplacé par un badge figé
   @Input()  lockedProject: string | null = null;
   @Output() close   = new EventEmitter<void>();
   @Output() saved   = new EventEmitter<Task>();
@@ -42,7 +42,7 @@ export class TaskModalComponent implements OnInit {
   projectSvc = inject(ProjectService);
   http       = inject(HttpClient);
 
-  private readonly API = 'http://localhost:8000/api';
+  private readonly API = environment.apiUrl;  // ← ici
 
   name        = signal('');
   description = signal('');
@@ -83,7 +83,6 @@ export class TaskModalComponent implements OnInit {
     this.projectSvc.projects().find(p => p.title === this.selProject())
   );
 
-  // Le projet est-il verrouillé ? (ouvert depuis la page projet)
   isLocked = computed(() => !!this.lockedProject);
 
   ngOnInit() {
@@ -95,7 +94,6 @@ export class TaskModalComponent implements OnInit {
       this.dueDate.set(this.task.dueDate);
       this.selProject.set(this.task.project);
     } else {
-      // Priorité : lockedProject > projectName > premier projet disponible
       this.selProject.set(
         this.lockedProject ?? this.projectName ?? this.projectSvc.projects()[0]?.title ?? ''
       );

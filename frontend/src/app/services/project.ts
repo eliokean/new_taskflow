@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface KanbanTask {
   id: number;
@@ -39,21 +40,17 @@ interface ApiProject {
 function toKanbanStatus(s: ApiTask['statut']): KanbanTask['status'] {
   return ({ a_faire: 'to-do', en_cours: 'in-progress', termine: 'completed' } as const)[s];
 }
-
 function toApiStatus(s: KanbanTask['status']): ApiTask['statut'] {
   return ({ 'to-do': 'a_faire', 'in-progress': 'en_cours', 'completed': 'termine' } as const)[s];
 }
-
 function toKanbanPriority(p: ApiTask['priorite']): KanbanTask['priority'] {
   if (!p) return null;
   return ({ basse: 'Low', moyenne: 'Medium', haute: 'High' } as const)[p];
 }
-
 function toApiPriority(p: KanbanTask['priority']): ApiTask['priorite'] {
   if (!p) return null;
   return ({ Low: 'basse', Medium: 'moyenne', High: 'haute' } as const)[p];
 }
-
 function toKanban(api: ApiProject): KanbanProject {
   return {
     id:          api.id,
@@ -74,7 +71,7 @@ function toKanban(api: ApiProject): KanbanProject {
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
 
-  private readonly API = 'http://localhost:8000/api';
+  private readonly API = environment.apiUrl;  // ← ici
 
   projects = signal<KanbanProject[]>([]);
   loading  = signal(false);
@@ -108,7 +105,6 @@ export class ProjectService {
       ...(data.color       !== undefined && { color:       data.color }),
     }).pipe(
       tap(api => this.projects.update(list => list.map(p => p.id === id ? {
-        // Préserve les tâches existantes lors d'une mise à jour (l'API ne les renvoie pas)
         ...toKanban(api),
         tasks: list.find(p => p.id === id)?.tasks ?? [],
       } : p)))
@@ -159,7 +155,6 @@ export class ProjectService {
     );
   }
 
-  // Met à jour les tâches d'un projet depuis TaskService (sync après fetchTasks)
   syncProjectTasks(projectId: number, tasks: { id: number; status: string; title: string }[]) {
     this.projects.update(list =>
       list.map(p => p.id === projectId ? {

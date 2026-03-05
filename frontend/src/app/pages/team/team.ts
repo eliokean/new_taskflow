@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 interface ApiUser {
   id:              number;
@@ -28,7 +29,7 @@ function strHash(s: string): number {
 export class TeamComponent implements OnInit {
 
   private http     = inject(HttpClient);
-  private readonly API = 'http://localhost:8000/api';
+  private readonly API = environment.apiUrl;  // ← ici
 
   collaborators = signal<ApiUser[]>([]);
   loading       = signal(true);

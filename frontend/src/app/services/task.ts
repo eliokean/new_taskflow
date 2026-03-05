@@ -2,6 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export type TaskStatus   = 'todo' | 'inprogress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high';
@@ -29,7 +30,6 @@ export interface Project {
   color:       ProjectColor;
 }
 
-// ── Mapping Laravel ↔ local ────────────────────────────────────────
 interface ApiTask {
   id:          number;
   project_id:  number;
@@ -53,7 +53,6 @@ function toPriority(p: ApiTask['priorite']): TaskPriority {
 function toApiPriority(p: TaskPriority): ApiTask['priorite'] {
   return ({ low: 'basse', medium: 'moyenne', high: 'haute' } as const)[p];
 }
-
 function toTask(api: ApiTask, projectName = ''): Task {
   return {
     id:          api.id,
@@ -68,23 +67,21 @@ function toTask(api: ApiTask, projectName = ''): Task {
   };
 }
 
-// ══════════════════════════════════════════════════════════════════
 @Injectable({ providedIn: 'root' })
 export class TaskService {
 
-  private readonly API = 'http://localhost:8000/api';
+  private readonly API = environment.apiUrl;  // ← ici
 
   tasks    = signal<Task[]>([]);
   projects = signal<Project[]>([]);
 
-  total     = computed(() => this.tasks().length);
-  completed = computed(() => this.tasks().filter(t => t.done).length);
-  overdue   = computed(() => this.tasks().filter(t => !t.done).length);
+  total        = computed(() => this.tasks().length);
+  completed    = computed(() => this.tasks().filter(t => t.done).length);
+  overdue      = computed(() => this.tasks().filter(t => !t.done).length);
   projectNames = computed(() => this.projects().map(p => p.name));
 
   constructor(private http: HttpClient) {}
 
-  // ── Tâches d'un projet (créateur) ─────────────────────────────
   fetchTasks(projectId: number, projectName: string): Observable<ApiTask[]> {
     return this.http.get<ApiTask[]>(`${this.API}/projects/${projectId}/tasks`).pipe(
       tap(list => {
@@ -97,7 +94,6 @@ export class TaskService {
     );
   }
 
-  // ── Tâches assignées à l'utilisateur connecté ─────────────────
   fetchAssigned(): Observable<ApiTask[]> {
     return this.http.get<ApiTask[]>(`${this.API}/tasks/assigned`).pipe(
       tap(list => {
@@ -110,7 +106,6 @@ export class TaskService {
     );
   }
 
-  // ── Ajouter une tâche ──────────────────────────────────────────
   addTask(data: Omit<Task, 'id' | 'done' | 'tag'>, projectId: number): Observable<ApiTask> {
     return this.http.post<ApiTask>(`${this.API}/projects/${projectId}/tasks`, {
       titre:       data.name,
@@ -119,13 +114,10 @@ export class TaskService {
       priorite:    toApiPriority(data.priority),
       due_date:    data.dueDate || null,
     }).pipe(
-      tap(api => {
-        this.tasks.update(ts => [...ts, toTask(api, data.project)]);
-      })
+      tap(api => this.tasks.update(ts => [...ts, toTask(api, data.project)]))
     );
   }
 
-  // ── Modifier une tâche ─────────────────────────────────────────
   updateTask(id: number, patch: Partial<Omit<Task, 'id'>>): Observable<ApiTask> {
     return this.http.put<ApiTask>(`${this.API}/tasks/${id}`, {
       ...(patch.name        && { titre:       patch.name }),
@@ -142,14 +134,12 @@ export class TaskService {
     );
   }
 
-  // ── Supprimer une tâche ────────────────────────────────────────
   deleteTask(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API}/tasks/${id}`).pipe(
       tap(() => this.tasks.update(ts => ts.filter(t => t.id !== id)))
     );
   }
 
-  // ── Toggle (met à jour le statut) ──────────────────────────────
   toggleTask(id: number): void {
     const task = this.tasks().find(t => t.id === id);
     if (!task) return;
@@ -157,7 +147,6 @@ export class TaskService {
     this.updateTask(id, { status: newStatus }).subscribe();
   }
 
-  // ── Projets (lecture seule, géré par ProjectService) ──────────
   getProject(id: number): Project | undefined {
     return this.projects().find(p => p.id === id);
   }

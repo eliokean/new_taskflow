@@ -11,11 +11,25 @@
   overflow-y: auto;
 }
 
+@media (max-width: 767px) {
+  .layout {
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  .content {
+    height: 100%;
+    overflow-y: auto;
+    /* Espace pour la bottom bar + safe area iPhone */
+    padding-bottom: calc(56px + env(safe-area-inset-bottom));
+  }
+}
+
 /* ── Overlay de chargement ─────────────────────────────────────── */
 .loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 10, 15, 0.75);
+  background: rgba(8,10,15,0.75);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: 9999;
@@ -24,7 +38,6 @@
   justify-content: center;
   animation: fadeIn 150ms ease;
 }
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -37,24 +50,20 @@
   gap: 16px;
 }
 
-/* ── Anneau spinner ────────────────────────────────────────────── */
 .spinner-ring {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.08);
+  border: 3px solid rgba(255,255,255,0.08);
   border-top-color: #10b981;
   animation: spin 700ms linear infinite;
 }
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .loading-text {
   font-family: 'Sora', sans-serif;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255,255,255,0.4);
   letter-spacing: 0.5px;
 }

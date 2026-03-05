@@ -3,7 +3,30 @@ set -e
 
 cd /var/www/html
 
-echo "==> PHP version: $(php -v | head -1)"
+echo "==> Creating .env from environment variables..."
+cat > .env << EOF
+APP_NAME=${APP_NAME:-TaskFlow}
+APP_ENV=${APP_ENV:-production}
+APP_KEY=${APP_KEY}
+APP_DEBUG=${APP_DEBUG:-false}
+APP_URL=${APP_URL:-http://localhost}
+
+LOG_CHANNEL=${LOG_CHANNEL:-stderr}
+LOG_LEVEL=${LOG_LEVEL:-debug}
+
+DB_CONNECTION=${DB_CONNECTION:-pgsql}
+DB_HOST=${DB_HOST}
+DB_PORT=${DB_PORT:-5432}
+DB_DATABASE=${DB_DATABASE}
+DB_USERNAME=${DB_USERNAME}
+DB_PASSWORD=${DB_PASSWORD}
+DB_SSLMODE=${DB_SSLMODE:-require}
+
+SESSION_DRIVER=${SESSION_DRIVER:-database}
+CACHE_STORE=${CACHE_STORE:-database}
+QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}
+EOF
+
 echo "==> Testing DB connection..."
 php -r "
 try {
@@ -15,19 +38,13 @@ try {
     echo 'DB: OK' . PHP_EOL;
 } catch(Exception \$e) {
     echo 'DB ERROR: ' . \$e->getMessage() . PHP_EOL;
+    exit(1);
 }
 "
 
-echo "==> Clearing cache..."
-php artisan config:clear 2>&1
-php artisan cache:clear 2>&1
-
-echo "==> Generating key..."
-php artisan key:generate --force 2>&1
-
 echo "==> Caching..."
 php artisan config:cache 2>&1 || echo "CONFIG CACHE FAILED"
-php artisan route:cache 2>&1 || echo "ROUTE CACHE FAILED"  
+php artisan route:cache 2>&1 || echo "ROUTE CACHE FAILED"
 php artisan view:cache 2>&1 || echo "VIEW CACHE FAILED"
 
 echo "==> Migrations..."
@@ -35,7 +52,3 @@ php artisan migrate --force 2>&1 || echo "MIGRATION FAILED"
 
 echo "==> Starting Apache..."
 exec apache2-foreground
-```
-
-
-

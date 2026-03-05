@@ -6,21 +6,31 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pgsql pdo_pgsql zip gd exif pcntl bcmath \
     && a2enmod rewrite
 
-# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_MEMORY_LIMIT=-1
 
-WORKDIR /var/www/html/public
-COPY composer.json composer.lock ../
-RUN cd .. && composer install --no-dev --no-scripts --no-interaction --optimize-autoloader --ignore-platform-reqs
+WORKDIR /var/www/html
 
-# Copie code + permissions
-COPY . ../
-RUN chown -R www-data:www-data ../ \
-    && chmod -R 775 ../storage ../bootstrap/cache
+# Composer AVANT copie code (cache Docker)
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-interaction --optimize-autoloader --ignore-platform-reqs
 
-# Apache → public/ par défaut
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+# Copie code complet
+COPY . .
+RUN composer dump-autoload --optimize \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+# ✅ FIX CRITIQUE : Apache → public/
+RUN echo '<VirtualHost *:8080>\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf \
+    && a2dissite 000-default \
+    && a2ensite 000-default.conf
 
 EXPOSE 8080
 CMD ["apache2-foreground"]

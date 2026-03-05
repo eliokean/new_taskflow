@@ -11,26 +11,22 @@ ENV COMPOSER_MEMORY_LIMIT=-1
 
 WORKDIR /var/www/html
 
-# Composer AVANT copie code (cache Docker)
+# UNIQUEMENT composer (cache Docker)
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-interaction --optimize-autoloader --ignore-platform-reqs
 
-# Copie code complet
+# Copie code SANS artisan commands
 COPY . .
-RUN composer dump-autoload --optimize \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
 
-# ✅ FIX CRITIQUE : Apache → public/
+# ✅ VirtualHost → public/
 RUN echo '<VirtualHost *:8080>\n\
     DocumentRoot /var/www/html/public\n\
     <Directory /var/www/html/public>\n\
         AllowOverride All\n\
         Require all granted\n\
+        Options Indexes FollowSymLinks\n\
     </Directory>\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf \
-    && a2dissite 000-default \
-    && a2ensite 000-default.conf
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 8080
 CMD ["apache2-foreground"]

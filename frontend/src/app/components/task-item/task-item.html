@@ -1,8 +1,21 @@
-<div class="task-item">
-  <div class="task-check"
-       [class.done]="task.done"
-       (click)="toggle.emit(task.id)">
+<div class="task-item" [style.border-left-color]="projectColor()">
+
+  <div class="task-body">
+    <div class="task-top">
+      <span class="task-name" [class.done]="task.done">{{ task.name }}</span>
+      <span class="task-priority" [ngClass]="priorityClass()">{{ priorityLabel() }}</span>
+    </div>
+    <div class="task-meta">
+      <span class="task-project">{{ task.project }}</span>
+      @if (task.dueDate) {
+        <span class="task-sep">•</span>
+        <span class="task-due">Due {{ formattedDueDate() }}</span>
+      }
+    </div>
   </div>
-  <span class="task-text" [class.done]="task.done">{{ task.name }}</span>
-  <span class="tag" [ngClass]="task.tag">{{ task.tag }}</span>
+
+  <div class="task-assignee" [style.background]="assigneeColor()">
+    {{ assigneeInitials() }}
+  </div>
+
 </div>

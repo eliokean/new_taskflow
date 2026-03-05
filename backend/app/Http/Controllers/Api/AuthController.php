@@ -151,4 +151,18 @@ class AuthController extends Controller
 
     return response()->json($users);
 }
+public function usersWithStats(Request $request): JsonResponse
+{
+    $users = User::select('id', 'name', 'email', 'avatar')
+        ->where('id', '!=', $request->user()->id) // exclure l'utilisateur connecté
+        ->withCount([
+            'assignedTasks as active_tasks'    => fn($q) => $q->where('statut', 'en_cours'),
+            'assignedTasks as completed_tasks' => fn($q) => $q->where('statut', 'termine'),
+        ])
+        ->orderBy('name')
+        ->get();
+
+    return response()->json($users);
+}
+
 }

@@ -17,12 +17,8 @@ export const authGuard: CanActivateFn = () => {
     return false;
   }
 
-  // Déjà chargé — pas de spinner
-  if (projects.projects().length > 0) {
-    return true;
-  }
+  if (projects.projects().length > 0) return true;
 
-  // Démarre le spinner et charge en arrière-plan
   loading.start();
 
   projects.fetchAll().subscribe({
@@ -33,11 +29,6 @@ export const authGuard: CanActivateFn = () => {
         ...list.map(p => tasks.fetchTasks(p.id, p.title)),
       ];
 
-      if (fetches.length === 0) {
-        loading.stop();
-        return;
-      }
-
       let done = 0;
       fetches.forEach(obs =>
         obs.subscribe({
@@ -45,6 +36,8 @@ export const authGuard: CanActivateFn = () => {
           error:    () => { if (++done === fetches.length) loading.stop(); },
         })
       );
+
+      if (fetches.length === 0) loading.stop();
     },
     error: () => loading.stop(),
   });

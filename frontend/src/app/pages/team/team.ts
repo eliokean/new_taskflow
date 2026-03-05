@@ -1,16 +1,21 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
-interface Member {
-  id: number;
-  name: string;
-  role: string;
-  status: 'online' | 'away' | 'offline';
-  isAdmin?: boolean;
-  avatar: string;
-  completed: number;
-  active: number;
-  email: string;
+interface ApiUser {
+  id:              number;
+  name:            string;
+  email:           string;
+  avatar:          string | null;
+  active_tasks:    number;
+  completed_tasks: number;
+}
+
+const COLORS = ['#06b6d4','#a855f7','#ec4899','#f97316','#10b981','#6366f1','#f59e0b','#ef4444'];
+function strHash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) & 0xffff;
+  return h;
 }
 
 @Component({
@@ -20,19 +25,30 @@ interface Member {
   templateUrl: './team.html',
   styleUrl: './team.css'
 })
-export class TeamComponent {
+export class TeamComponent implements OnInit {
 
-  members = signal<Member[]>([
-    { id: 1, name: 'Sarah Johnson',   role: 'Product Designer',    status: 'online',  isAdmin: true, avatar: 'https://randomuser.me/api/portraits/women/44.jpg', completed: 45, active: 8,  email: 'sarah@taskflow.io'   },
-    { id: 2, name: 'Michael Chen',    role: 'Frontend Developer',  status: 'online',  avatar: 'https://randomuser.me/api/portraits/men/32.jpg',   completed: 52, active: 12, email: 'michael@taskflow.io' },
-    { id: 3, name: 'Emily Rodriguez', role: 'Backend Developer',   status: 'away',    avatar: 'https://randomuser.me/api/portraits/women/68.jpg', completed: 38, active: 6,  email: 'emily@taskflow.io'   },
-    { id: 4, name: 'James Wilson',    role: 'DevOps Engineer',     status: 'offline', avatar: 'https://randomuser.me/api/portraits/men/75.jpg',   completed: 61, active: 3,  email: 'james@taskflow.io'   },
-    { id: 5, name: 'Aisha Patel',     role: 'UI/UX Designer',      status: 'online',  avatar: 'https://randomuser.me/api/portraits/women/90.jpg', completed: 29, active: 9,  email: 'aisha@taskflow.io'   },
-    { id: 6, name: 'Lucas Martin',    role: 'Full Stack Developer', status: 'away',   avatar: 'https://randomuser.me/api/portraits/men/11.jpg',   completed: 15, active: 8,  email: 'lucas@taskflow.io'   },
-  ]);
+  private http     = inject(HttpClient);
+  private readonly API = 'http://localhost:8000/api';
 
-  totalMembers  = computed(() => this.members().length);
-  onlineCount   = computed(() => this.members().filter(m => m.status === 'online').length);
-  activeTasks   = computed(() => this.members().reduce((acc, m) => acc + m.active, 0));
-  completedAll  = computed(() => this.members().reduce((acc, m) => acc + m.completed, 0));
+  collaborators = signal<ApiUser[]>([]);
+  loading       = signal(true);
+
+  totalMembers = computed(() => this.collaborators().length);
+  activeTasks  = computed(() => this.collaborators().reduce((acc, u) => acc + u.active_tasks, 0));
+  completedAll = computed(() => this.collaborators().reduce((acc, u) => acc + u.completed_tasks, 0));
+
+  ngOnInit() {
+    this.http.get<ApiUser[]>(`${this.API}/users/stats`).subscribe({
+      next:  users => { this.collaborators.set(users); this.loading.set(false); },
+      error: ()    => this.loading.set(false),
+    });
+  }
+
+  initials(name: string): string {
+    return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  }
+
+  avatarColor(name: string): string {
+    return COLORS[strHash(name) % COLORS.length];
+  }
 }

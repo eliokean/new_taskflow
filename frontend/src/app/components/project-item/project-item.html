@@ -1,19 +1,20 @@
 <div class="project-item">
 
-  <div class="project-icon" [ngClass]="project.color">
+  <div class="project-icon" [style.background]="project.color + '22'" [style.color]="project.color">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M3 7h18M3 12h18M3 17h18"/>
     </svg>
   </div>
 
   <div class="project-info">
-    <div class="project-name">{{ project.name }}</div>
-    <div class="project-meta">{{ project.taskCount }} tasks · Due {{ project.dueDate }}</div>
+    <div class="project-name">{{ project.title }}</div>
+    <div class="project-meta">{{ taskCount }} tâche{{ taskCount !== 1 ? 's' : '' }} · {{ progress }}% terminé</div>
   </div>
 
   <div class="project-bar-wrap">
-    <div class="project-bar" [ngClass]="project.color"
-         [style.height.%]="project.progress">
+    <div class="project-bar"
+         [style.background]="project.color"
+         [style.height.%]="progress">
     </div>
   </div>
 

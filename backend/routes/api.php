@@ -24,7 +24,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('projects', ProjectController::class);
 
     // Utilisateurs (pour l'assignation)
+    Route::get('users/stats', [AuthController::class, 'usersWithStats']);
     Route::get('users', [AuthController::class, 'users']);
+    
 
     // Tâches imbriquées dans un projet (liste + création)
     Route::get ('projects/{project}/tasks', [TaskController::class, 'index']);

@@ -29,11 +29,11 @@ class TaskController extends Controller
         $this->authorizeProject($request, $project);
 
         $validated = $request->validate([
-            'titre'    => 'required|string|max:255',
+            'titre'       => 'required|string|max:255',
             'description' => 'nullable|string',
-            'statut'   => 'in:a_faire,en_cours,termine',
-            'priorite' => 'nullable|in:basse,moyenne,haute',
-            'due_date' => 'nullable|date',
+            'statut'      => 'in:a_faire,en_cours,termine',
+            'priorite'    => 'nullable|in:basse,moyenne,haute',
+            'due_date'    => 'nullable|date',
         ]);
 
         $task = $project->tasks()->create([
@@ -82,7 +82,7 @@ class TaskController extends Controller
         return response()->json(['message' => 'Tâche supprimée.']);
     }
 
-    // POST /api/tasks/{task}/assign — assigner un utilisateur
+    // POST /api/tasks/{task}/assign
     public function assign(Request $request, Task $task): JsonResponse
     {
         $this->authorizeTask($request, $task);
@@ -91,14 +91,14 @@ class TaskController extends Controller
             'user_id' => 'required|exists:users,id',
         ]);
 
-        $task->assignees()->syncWithoutDetaching([$request->user_id => [
-            'assigned_at' => now(),
-        ]]);
+        $task->assignees()->syncWithoutDetaching([
+            $request->user_id => ['assigned_at' => now()],
+        ]);
 
         return response()->json($task->load('assignees:id,name,avatar'));
     }
 
-    // DELETE /api/tasks/{task}/unassign — retirer un utilisateur
+    // DELETE /api/tasks/{task}/unassign
     public function unassign(Request $request, Task $task): JsonResponse
     {
         $this->authorizeTask($request, $task);
@@ -112,7 +112,19 @@ class TaskController extends Controller
         return response()->json($task->load('assignees:id,name,avatar'));
     }
 
+    // GET /api/tasks/assigned
+    public function assigned(Request $request): JsonResponse
+    {
+        $tasks = $request->user()
+            ->assignedTasks()
+            ->with('project:id,intitule,color')
+            ->get();
+
+        return response()->json($tasks);
+    }
+
     // ── Helpers ────────────────────────────────────────────────────
+
     private function authorizeProject(Request $request, Project $project): void
     {
         if ($project->user_id !== $request->user()->id) {
@@ -122,17 +134,14 @@ class TaskController extends Controller
 
     private function authorizeTask(Request $request, Task $task): void
     {
-        if ($task->project->user_id !== $request->user()->id) {
+        $userId = $request->user()->id;
+
+        // Autorisé si propriétaire du projet OU assigné à la tâche
+        $isOwner    = $task->project->user_id === $userId;
+        $isAssignee = $task->assignees()->where('user_id', $userId)->exists();
+
+        if (!$isOwner && !$isAssignee) {
             abort(403, 'Action non autorisée.');
         }
     }
-    public function assigned(Request $request): JsonResponse
-{
-    $tasks = $request->user()
-        ->assignedTasks()
-        ->with('project:id,intitule,color')
-        ->get();
-
-    return response()->json($tasks);
-}
 }

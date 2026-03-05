@@ -13,7 +13,6 @@ interface AppUser {
   avatar: string | null;
 }
 
-// Palette de couleurs déterministe selon le nom
 const COLORS = ['#06b6d4','#a855f7','#ec4899','#f97316','#10b981','#6366f1','#f59e0b','#ef4444'];
 function strHash(s: string): number {
   let h = 0;
@@ -30,9 +29,11 @@ function strHash(s: string): number {
 })
 export class TaskModalComponent implements OnInit {
 
-  @Input()  task:        Task | null = null;
-  @Input()  projectName: string | null = null;
-  @Input()  mode:        'create' | 'edit' = 'create';
+  @Input()  task:          Task | null = null;
+  @Input()  projectName:   string | null = null;
+  @Input()  mode:          'create' | 'edit' = 'create';
+  // Quand fourni, le select projet est remplacé par un badge figé
+  @Input()  lockedProject: string | null = null;
   @Output() close   = new EventEmitter<void>();
   @Output() saved   = new EventEmitter<Task>();
   @Output() deleted = new EventEmitter<number>();
@@ -43,7 +44,6 @@ export class TaskModalComponent implements OnInit {
 
   private readonly API = 'http://localhost:8000/api';
 
-  // ── Champs du formulaire ───────────────────────────────────────
   name        = signal('');
   description = signal('');
   priority    = signal<TaskPriority>('medium');
@@ -54,7 +54,6 @@ export class TaskModalComponent implements OnInit {
   saving      = signal(false);
   errorMsg    = signal('');
 
-  // ── Assignation ────────────────────────────────────────────────
   allUsers      = signal<AppUser[]>([]);
   selectedUsers = signal<AppUser[]>([]);
   userSearch    = signal('');
@@ -68,7 +67,6 @@ export class TaskModalComponent implements OnInit {
     );
   });
 
-  // ── Priorités / statuts ────────────────────────────────────────
   readonly priorities: { value: TaskPriority; label: string; color: string; icon: string }[] = [
     { value: 'low',    label: 'Faible',  color: '#10b981', icon: '↓' },
     { value: 'medium', label: 'Moyenne', color: '#f59e0b', icon: '→' },
@@ -85,7 +83,9 @@ export class TaskModalComponent implements OnInit {
     this.projectSvc.projects().find(p => p.title === this.selProject())
   );
 
-  // ── Init ───────────────────────────────────────────────────────
+  // Le projet est-il verrouillé ? (ouvert depuis la page projet)
+  isLocked = computed(() => !!this.lockedProject);
+
   ngOnInit() {
     if (this.task) {
       this.name.set(this.task.name);
@@ -95,25 +95,23 @@ export class TaskModalComponent implements OnInit {
       this.dueDate.set(this.task.dueDate);
       this.selProject.set(this.task.project);
     } else {
-      this.selProject.set(this.projectName ?? this.projectSvc.projects()[0]?.title ?? '');
+      // Priorité : lockedProject > projectName > premier projet disponible
+      this.selProject.set(
+        this.lockedProject ?? this.projectName ?? this.projectSvc.projects()[0]?.title ?? ''
+      );
     }
     this.loadUsers();
     requestAnimationFrame(() => this.visible.set(true));
   }
 
-  // ── Charger tous les utilisateurs depuis Laravel ───────────────
   private loadUsers() {
     this.loadingUsers.set(true);
     this.http.get<AppUser[]>(`${this.API}/users`).subscribe({
-      next: (users) => {
-        this.allUsers.set(users);
-        this.loadingUsers.set(false);
-      },
-      error: () => this.loadingUsers.set(false),
+      next:  users => { this.allUsers.set(users); this.loadingUsers.set(false); },
+      error: ()    => this.loadingUsers.set(false),
     });
   }
 
-  // ── Helpers assignation ────────────────────────────────────────
   isSelected(id: number): boolean {
     return this.selectedUsers().some(u => u.id === id);
   }
@@ -126,7 +124,6 @@ export class TaskModalComponent implements OnInit {
     }
   }
 
-  // ── Helpers avatar ─────────────────────────────────────────────
   initials(name: string): string {
     return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   }
@@ -135,10 +132,8 @@ export class TaskModalComponent implements OnInit {
     return COLORS[strHash(name) % COLORS.length];
   }
 
-  // ── Sauvegarde ─────────────────────────────────────────────────
   save() {
     if (!this.name().trim()) return;
-
     this.saving.set(true);
     this.errorMsg.set('');
 
@@ -146,69 +141,40 @@ export class TaskModalComponent implements OnInit {
 
     if (this.mode === 'edit' && this.task) {
       this.svc.updateTask(this.task.id, {
-        name:        this.name(),
-        description: this.description(),
-        priority:    this.priority(),
-        status:      this.status(),
-        dueDate:     this.dueDate(),
-        project:     this.selProject(),
+        name: this.name(), description: this.description(),
+        priority: this.priority(), status: this.status(),
+        dueDate: this.dueDate(), project: this.selProject(),
       }).subscribe({
-        next: () => {
-          this.syncAssignees(this.task!.id);
-        },
-        error: (e: { error?: { message?: string } }) => {
-          this.saving.set(false);
-          this.errorMsg.set(e.error?.message ?? 'Erreur lors de la mise à jour.');
-        },
+        next:  () => this.syncAssignees(this.task!.id),
+        error: (e: any) => { this.saving.set(false); this.errorMsg.set(e.error?.message ?? 'Erreur.'); },
       });
-
     } else if (project) {
       this.svc.addTask({
-        name:        this.name(),
-        description: this.description(),
-        priority:    this.priority(),
-        status:      'todo',
-        dueDate:     this.dueDate(),
-        project:     this.selProject(),
+        name: this.name(), description: this.description(),
+        priority: this.priority(), status: 'todo',
+        dueDate: this.dueDate(), project: this.selProject(),
       }, project.id).subscribe({
         next: (api: any) => {
-          if (this.selectedUsers().length > 0) {
-            this.syncAssignees(api.id);
-          } else {
-            this.saving.set(false);
-            this.dismiss();
-          }
+          if (this.selectedUsers().length > 0) this.syncAssignees(api.id);
+          else { this.saving.set(false); this.dismiss(); }
         },
-        error: (e: { error?: { message?: string } }) => {
-          this.saving.set(false);
-          this.errorMsg.set(e.error?.message ?? 'Erreur lors de la création.');
-        },
+        error: (e: any) => { this.saving.set(false); this.errorMsg.set(e.error?.message ?? 'Erreur.'); },
       });
     }
   }
 
-  // Assigne tous les utilisateurs sélectionnés à la tâche
   private syncAssignees(taskId: number) {
     const calls = this.selectedUsers().map(u =>
       this.http.post(`${this.API}/tasks/${taskId}/assign`, { user_id: u.id }).toPromise()
     );
-    Promise.all(calls).finally(() => {
-      this.saving.set(false);
-      this.dismiss();
-    });
+    Promise.all(calls).finally(() => { this.saving.set(false); this.dismiss(); });
   }
 
-  // ── Suppression ────────────────────────────────────────────────
   delete() {
     if (!this.task) return;
     this.svc.deleteTask(this.task.id).subscribe({
-      next: () => {
-        this.deleted.emit(this.task!.id);
-        this.dismiss();
-      },
-      error: (e: { error?: { message?: string } }) => {
-        this.errorMsg.set(e.error?.message ?? 'Erreur lors de la suppression.');
-      },
+      next:  () => { this.deleted.emit(this.task!.id); this.dismiss(); },
+      error: (e: any) => this.errorMsg.set(e.error?.message ?? 'Erreur.'),
     });
   }
 

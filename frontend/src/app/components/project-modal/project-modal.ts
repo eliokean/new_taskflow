@@ -39,6 +39,11 @@ export class ProjectModalComponent implements OnInit {
 
   readonly colors: ProjectColor[] = ['teal', 'blue', 'purple', 'pink', 'orange', 'red'];
 
+  // Méthode appelée dans le HTML pour obtenir le hex d'une couleur
+  colorHex(c: ProjectColor): string {
+    return COLOR_MAP[c];
+  }
+
   ngOnInit() {
     if (this.editProject) {
       this.name.set(this.editProject.title);
@@ -63,10 +68,7 @@ export class ProjectModalComponent implements OnInit {
 
     if (this.editProject) {
       this.svc.updateProject(this.editProject.id, data).subscribe({
-        next: (updated: KanbanProject) => {
-          this.saved.emit(updated);
-          this.dismiss();
-        },
+        next: (updated: KanbanProject) => { this.saved.emit(updated); this.dismiss(); },
         error: (e: { error?: { message?: string } }) => {
           this.saving.set(false);
           this.errorMsg.set(e.error?.message ?? 'Erreur lors de la mise à jour.');
@@ -74,10 +76,7 @@ export class ProjectModalComponent implements OnInit {
       });
     } else {
       this.svc.addProject(data).subscribe({
-        next: (project: KanbanProject) => {
-          this.saved.emit(project);
-          this.dismiss();
-        },
+        next: (project: KanbanProject) => { this.saved.emit(project); this.dismiss(); },
         error: (e: { error?: { message?: string } }) => {
           this.saving.set(false);
           this.errorMsg.set(e.error?.message ?? 'Erreur lors de la création.');

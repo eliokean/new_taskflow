@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-// ── Interfaces publiques (identiques à avant) ──────────────────────
 export interface KanbanTask {
   id: number;
   title: string;
@@ -21,15 +20,6 @@ export interface KanbanProject {
   tasks: KanbanTask[];
 }
 
-// ── Types internes Laravel ─────────────────────────────────────────
-interface ApiProject {
-  id: number;
-  intitule: string;
-  description: string;
-  color: string;
-  tasks?: ApiTask[];
-}
-
 interface ApiTask {
   id: number;
   titre: string;
@@ -38,7 +28,14 @@ interface ApiTask {
   created_by: number;
 }
 
-// ── Helpers de mapping ─────────────────────────────────────────────
+interface ApiProject {
+  id: number;
+  intitule: string;
+  description: string;
+  color: string;
+  tasks?: ApiTask[];
+}
+
 function toKanbanStatus(s: ApiTask['statut']): KanbanTask['status'] {
   return ({ a_faire: 'to-do', en_cours: 'in-progress', termine: 'completed' } as const)[s];
 }
@@ -74,7 +71,6 @@ function toKanban(api: ApiProject): KanbanProject {
   };
 }
 
-// ══════════════════════════════════════════════════════════════════
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
 
@@ -85,7 +81,6 @@ export class ProjectService {
 
   constructor(private http: HttpClient) {}
 
-  // ── Charger tous les projets au démarrage ──────────────────────
   fetchAll(): Observable<ApiProject[]> {
     this.loading.set(true);
     return this.http.get<ApiProject[]>(`${this.API}/projects`).pipe(
@@ -96,7 +91,6 @@ export class ProjectService {
     );
   }
 
-  // ── Créer — retourne Observable<KanbanProject> ─────────────────
   addProject(data: { title: string; description: string; color: string }): Observable<KanbanProject> {
     return this.http.post<ApiProject>(`${this.API}/projects`, {
       intitule:    data.title,
@@ -107,25 +101,26 @@ export class ProjectService {
     ) as unknown as Observable<KanbanProject>;
   }
 
-  // ── Modifier — retourne Observable<KanbanProject> ──────────────
   updateProject(id: number, data: Partial<{ title: string; description: string; color: string }>): Observable<KanbanProject> {
     return this.http.put<ApiProject>(`${this.API}/projects/${id}`, {
       ...(data.title       !== undefined && { intitule:    data.title }),
       ...(data.description !== undefined && { description: data.description }),
       ...(data.color       !== undefined && { color:       data.color }),
     }).pipe(
-      tap(api => this.projects.update(list => list.map(p => p.id === id ? toKanban(api) : p)))
+      tap(api => this.projects.update(list => list.map(p => p.id === id ? {
+        // Préserve les tâches existantes lors d'une mise à jour (l'API ne les renvoie pas)
+        ...toKanban(api),
+        tasks: list.find(p => p.id === id)?.tasks ?? [],
+      } : p)))
     ) as unknown as Observable<KanbanProject>;
   }
 
-  // ── Supprimer ──────────────────────────────────────────────────
   deleteProject(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API}/projects/${id}`).pipe(
       tap(() => this.projects.update(list => list.filter(p => p.id !== id)))
     );
   }
 
-  // ── Ajouter une tâche ──────────────────────────────────────────
   addTask(projectId: number, task: Omit<KanbanTask, 'id'>): Observable<ApiTask> {
     return this.http.post<ApiTask>(`${this.API}/projects/${projectId}/tasks`, {
       titre:    task.title,
@@ -149,7 +144,6 @@ export class ProjectService {
     );
   }
 
-  // ── Modifier le statut d'une tâche ────────────────────────────
   updateTaskStatus(projectId: number, taskId: number, status: KanbanTask['status']): Observable<ApiTask> {
     return this.http.put<ApiTask>(`${this.API}/tasks/${taskId}`, {
       statut: toApiStatus(status),
@@ -165,7 +159,22 @@ export class ProjectService {
     );
   }
 
-  // ── Helpers locaux ─────────────────────────────────────────────
+  // Met à jour les tâches d'un projet depuis TaskService (sync après fetchTasks)
+  syncProjectTasks(projectId: number, tasks: { id: number; status: string; title: string }[]) {
+    this.projects.update(list =>
+      list.map(p => p.id === projectId ? {
+        ...p,
+        tasks: tasks.map(t => ({
+          id:       t.id,
+          title:    t.title,
+          status:   (t.status === 'todo' ? 'to-do' : t.status === 'inprogress' ? 'in-progress' : 'completed') as KanbanTask['status'],
+          priority: null,
+          assignee: { initials: '?', color: '#6b7280' },
+        })),
+      } : p)
+    );
+  }
+
   getProject(id: number): KanbanProject | undefined {
     return this.projects().find(p => p.id === id);
   }

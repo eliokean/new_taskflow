@@ -4,44 +4,81 @@
   <div class="header">
     <div>
       <h1>TaskFlow</h1>
-      <p>Welcome back! Here's what's happening today.</p>
+      <p>Bienvenue ! Voici ce qui se passe aujourd'hui.</p>
     </div>
-    <button class="btn-new" (click)="openCreateTask()">+ New Task</button>
+    <button class="btn-new" (click)="openCreateTask()">+ Nouvelle tâche</button>
   </div>
 
   <!-- Stats -->
   <div class="stats">
-    <app-stat-card label="Total Tasks" [value]="taskService.total()"     color="purple" icon="tasks" />
-    <app-stat-card label="Completed"   [value]="taskService.completed()" color="teal"   icon="check" />
-    <app-stat-card label="Overdue"     [value]="taskService.overdue()"   color="orange" icon="alert" />
+    <app-stat-card label="Total"     [value]="taskService.total()"     color="purple" icon="tasks" />
+    <app-stat-card label="Terminées" [value]="taskService.completed()" color="teal"   icon="check" />
+    <app-stat-card label="En retard" [value]="taskService.overdue()"   color="orange" icon="alert" />
   </div>
 
   <!-- Projects + Tasks -->
   <div class="two-col">
 
+    <!-- Projets -->
     <div class="section">
       <div class="section-header">
-        <h2>Projects</h2>
+        <h2>Projets</h2>
         <button class="btn-add" (click)="openCreateProject()">+</button>
       </div>
-      @for (project of taskService.projects(); track project.id) {
-        <app-project-item [project]="project" (click)="openEditProject(project)" />
+
+      @if (projectService.loading()) {
+        <!-- Skeleton projets -->
+        @for (_ of [1,2,3]; track $index) {
+          <div class="skeleton-item">
+            <div class="sk-icon"></div>
+            <div class="sk-lines">
+              <div class="sk-line sk-line-long"></div>
+              <div class="sk-line sk-line-short"></div>
+            </div>
+            <div class="sk-bar"></div>
+          </div>
+        }
+      } @else {
+        @for (project of projectService.projects(); track project.id) {
+          <app-project-item [project]="project" (click)="openEditProject(project)" />
+        }
+        @if (projectService.projects().length === 0) {
+          <p class="empty-hint">Aucun projet pour l'instant.</p>
+        }
       }
     </div>
 
+    <!-- Tâches -->
     <div class="section">
       <div class="section-header">
-        <h2>Recent Tasks</h2>
+        <h2>Tâches récentes</h2>
       </div>
-      @for (task of taskService.tasks(); track task.id) {
-        <app-task-item [task]="task" (toggle)="onToggle($event)" (click)="openEditTask(task)" />
+
+      @if (projectService.loading()) {
+        <!-- Skeleton tâches -->
+        @for (_ of [1,2,3,4]; track $index) {
+          <div class="skeleton-task">
+            <div class="sk-left-bar"></div>
+            <div class="sk-lines">
+              <div class="sk-line sk-line-long"></div>
+              <div class="sk-line sk-line-short"></div>
+            </div>
+            <div class="sk-avatar"></div>
+          </div>
+        }
+      } @else {
+        @for (task of taskService.tasks(); track task.id) {
+          <app-task-item [task]="task" (toggle)="onToggle($event)" (click)="openEditTask(task)" />
+        }
+        @if (taskService.tasks().length === 0) {
+          <p class="empty-hint">Aucune tâche pour l'instant.</p>
+        }
       }
     </div>
 
   </div>
 </div>
 
-<!-- Modals -->
 @if (showTaskModal()) {
   <app-task-modal
     [task]="taskToEdit()"

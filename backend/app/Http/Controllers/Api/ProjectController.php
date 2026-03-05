@@ -9,67 +9,66 @@ use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
-    // GET /api/projects — projets de l'utilisateur connecté
+    // GET /api/projects
     public function index(Request $request): JsonResponse
     {
         $projects = $request->user()
             ->projects()
-            ->orderByDesc('created_at')
+            ->with(['tasks:id,project_id,titre,statut,priorite'])  // ← tâches incluses
             ->get();
 
         return response()->json($projects);
     }
 
-    // POST /api/projects — créer un projet
+    // POST /api/projects
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'intitule'    => 'required|string|max:255',
             'description' => 'nullable|string',
-            'color'       => 'nullable|string|max:50',
+            'color'       => 'nullable|string|max:20',
         ]);
 
         $project = $request->user()->projects()->create($validated);
 
-        return response()->json($project, 201);
+        return response()->json($project->load('tasks:id,project_id,titre,statut,priorite'), 201);
     }
 
-    // GET /api/projects/{id} — détail d'un projet
+    // GET /api/projects/{project}
     public function show(Request $request, Project $project): JsonResponse
     {
-        $this->authorizeProject($request, $project);
+        $this->authorize($request, $project);
 
-        return response()->json($project->load('tasks'));
+        return response()->json($project->load(['tasks:id,project_id,titre,statut,priorite', 'tasks.assignees:id,name,avatar']));
     }
 
-    // PUT /api/projects/{id} — modifier un projet
+    // PUT /api/projects/{project}
     public function update(Request $request, Project $project): JsonResponse
     {
-        $this->authorizeProject($request, $project);
+        $this->authorize($request, $project);
 
         $validated = $request->validate([
             'intitule'    => 'sometimes|string|max:255',
             'description' => 'nullable|string',
-            'color'       => 'nullable|string|max:50',
+            'color'       => 'nullable|string|max:20',
         ]);
 
         $project->update($validated);
 
-        return response()->json($project);
+        return response()->json($project->load('tasks:id,project_id,titre,statut,priorite'));
     }
 
-    // DELETE /api/projects/{id} — supprimer un projet
+    // DELETE /api/projects/{project}
     public function destroy(Request $request, Project $project): JsonResponse
     {
-        $this->authorizeProject($request, $project);
+        $this->authorize($request, $project);
 
         $project->delete();
 
         return response()->json(['message' => 'Projet supprimé.']);
     }
 
-    // ── Vérifier que le projet appartient à l'utilisateur ──────────
-    private function authorizeProject(Request $request, Project $project): void
+    private function authorize(Request $request, Project $project): void
     {
         if ($project->user_id !== $request->user()->id) {
             abort(403, 'Action non autorisée.');

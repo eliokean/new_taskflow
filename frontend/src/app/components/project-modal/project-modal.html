@@ -3,8 +3,8 @@
 
     <!-- Header -->
     <div class="modal-header">
-      <h2>{{ editProject ? 'Edit Project' : 'New Project' }}</h2>
-      <button class="close-btn" (click)="dismiss()" aria-label="Close">
+      <h2>{{ editProject ? 'Modifier le projet' : 'Nouveau projet' }}</h2>
+      <button class="close-btn" (click)="dismiss()" aria-label="Fermer">
         <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="18" y1="6" x2="6" y2="18"/>
           <line x1="6" y1="6" x2="18" y2="18"/>
@@ -12,40 +12,45 @@
       </button>
     </div>
 
-    <!-- Project Name -->
+    <!-- Erreur -->
+    @if (errorMsg()) {
+      <div class="error-banner">{{ errorMsg() }}</div>
+    }
+
+    <!-- Nom du projet -->
     <div class="field">
-      <label>Project Name</label>
+      <label>Nom du projet</label>
       <input
         type="text"
         [value]="name()"
         (input)="name.set($any($event.target).value)"
-        placeholder="Enter project name..."
+        placeholder="Ex : Refonte du site web..."
         class="input-field"
       />
     </div>
 
     <!-- Description -->
     <div class="field">
-      <label>Description</label>
+      <label>Description <span class="optional">— optionnelle</span></label>
       <textarea
         [value]="description()"
         (input)="description.set($any($event.target).value)"
-        placeholder="Add project description..."
+        placeholder="Décrivez l'objectif du projet..."
         class="input-field textarea"
         rows="3"
       ></textarea>
     </div>
 
-    <!-- Color Picker -->
+    <!-- Couleur -->
     <div class="field">
-      <label>Project Color</label>
+      <label>Couleur du projet</label>
       <div class="color-grid">
         @for (c of colors; track c) {
           <button
             class="color-swatch"
             [class.active]="color() === c"
             (click)="color.set(c)"
-            aria-label="Pick color"
+            [attr.aria-label]="'Couleur ' + c"
           >
             <span class="swatch-dot" [ngClass]="'bg-' + c"></span>
             @if (color() === c) {
@@ -60,12 +65,17 @@
 
     <!-- Actions -->
     <div class="modal-actions">
-      <button class="btn-cancel" (click)="dismiss()">Cancel</button>
-      <button class="btn-save" (click)="save()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        {{ editProject ? 'Save Changes' : 'Create Project' }}
+      <button class="btn-cancel" (click)="dismiss()" [disabled]="saving()">Annuler</button>
+      <button class="btn-save" (click)="save()" [disabled]="saving() || !name().trim()">
+        @if (saving()) {
+          <span class="spinner"></span>
+          {{ editProject ? 'Enregistrement...' : 'Création...' }}
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          {{ editProject ? 'Enregistrer' : 'Créer le projet' }}
+        }
       </button>
     </div>
 

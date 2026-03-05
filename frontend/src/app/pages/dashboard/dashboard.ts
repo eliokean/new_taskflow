@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
-import { TaskService, Task, Project } from '../../services/task';
+import { TaskService, Task } from '../../services/task';
+import { ProjectService, KanbanProject } from '../../services/project';
 import { StatCardComponent }     from '../../components/stat-card/stat-card';
 import { ProjectItemComponent }  from '../../components/project-item/project-item';
 import { TaskItemComponent }     from '../../components/task-item/task-item';
@@ -17,16 +18,17 @@ import { ProjectModalComponent } from '../../components/project-modal/project-mo
   styleUrl: './dashboard.css'
 })
 export class Dashboard {
-  taskService = inject(TaskService);
+  taskService    = inject(TaskService);
+  projectService = inject(ProjectService);
 
-  // ── état des modals ──────────────────────────────────────
+  // ── état des modals ──────────────────────────────────────────────
   showTaskModal    = signal(false);
   showProjectModal = signal(false);
   taskToEdit         = signal<Task | null>(null);
-  projectToEdit      = signal<Project | null>(null);
+  projectToEdit      = signal<KanbanProject | null>(null);  // ← KanbanProject
   preselectedProject = signal<string | null>(null);
 
-  // ── tâches ───────────────────────────────────────────────
+  // ── tâches ───────────────────────────────────────────────────────
   onToggle(id: number) { this.taskService.toggleTask(id); }
 
   openCreateTask() {
@@ -41,14 +43,23 @@ export class Dashboard {
     this.showTaskModal.set(true);
   }
 
-  // ── projets ──────────────────────────────────────────────
+  // ── projets ──────────────────────────────────────────────────────
   openCreateProject() {
     this.projectToEdit.set(null);
     this.showProjectModal.set(true);
   }
 
-  openEditProject(project: Project) {
-    this.projectToEdit.set(project);
+  // Convertit un Project (TaskService) en KanbanProject pour le modal
+  openEditProject(project: any) {
+    const kanban: KanbanProject = {
+      id:          project.id,
+      title:       project.name,
+      description: project.description ?? '',
+      color:       project.color ?? '#22c55e',
+      members:     [],
+      tasks:       [],
+    };
+    this.projectToEdit.set(kanban);
     this.showProjectModal.set(true);
   }
 }

@@ -3,15 +3,9 @@
   <!-- Header -->
   <div class="header">
     <div>
-      <h1>Calendar</h1>
-      <p>View and manage your scheduled tasks</p>
+      <h1>Calendrier</h1>
+      <p>Visualisez vos tâches par date d'échéance</p>
     </div>
-    <button class="btn-add">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M12 5v14M5 12h14"/>
-      </svg>
-      Add Event
-    </button>
   </div>
 
   <!-- Calendar Card -->
@@ -32,7 +26,7 @@
             <path d="M15 18l-6-6 6-6"/>
           </svg>
         </button>
-        <button class="nav-btn today-btn" (click)="goToday()">Today</button>
+        <button class="nav-btn today-btn" (click)="goToday()">Aujourd'hui</button>
         <button class="nav-btn" (click)="nextMonth()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 18l6-6-6-6"/>
@@ -56,8 +50,8 @@
             <span class="day-number">{{ day }}</span>
             <div class="day-events">
               @for (event of getEventsForDay(day); track event.id) {
-                <div class="event-pill" [ngClass]="event.color">
-                  {{ event.title.length > 12 ? (event.title | slice:0:12) + '...' : event.title }}
+                <div class="event-pill" [ngClass]="event.color" [title]="event.title">
+                  {{ event.title.length > 12 ? (event.title | slice:0:12) + '…' : event.title }}
                 </div>
               }
             </div>
@@ -68,25 +62,32 @@
 
   </div>
 
-  <!-- Upcoming This Week -->
+  <!-- Tâches à venir ce mois -->
   <div class="card upcoming">
-    <h2>Upcoming This Week</h2>
-    <div class="upcoming-grid">
-      @for (group of upcomingEvents(); track group.date) {
-        <div class="upcoming-card">
-          <div class="upcoming-date">{{ formatUpcomingDate(group.date) }}</div>
-          @for (event of group.events; track event.id) {
-            <div class="upcoming-event">
-              <div class="upcoming-bar" [ngClass]="event.color"></div>
-              <div>
-                <div class="upcoming-title">{{ event.title }}</div>
-                <div class="upcoming-time">{{ event.time }}</div>
+    <h2>Échéances ce mois</h2>
+
+    @if (upcomingEvents().length === 0) {
+      <p style="color:#6b7280; font-size:14px; padding: 16px 0">
+        Aucune tâche avec échéance ce mois.
+      </p>
+    } @else {
+      <div class="upcoming-grid">
+        @for (group of upcomingEvents(); track group.date) {
+          <div class="upcoming-card">
+            <div class="upcoming-date">{{ formatUpcomingDate(group.date) }}</div>
+            @for (event of group.events; track event.id) {
+              <div class="upcoming-event">
+                <div class="upcoming-bar" [ngClass]="event.color"></div>
+                <div>
+                  <div class="upcoming-title">{{ event.title }}</div>
+                  <div class="upcoming-time">{{ taskStatus(event) }}</div>
+                </div>
               </div>
-            </div>
-          }
-        </div>
-      }
-    </div>
+            }
+          </div>
+        }
+      </div>
+    }
   </div>
 
 </div>

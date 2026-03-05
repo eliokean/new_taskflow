@@ -1,12 +1,19 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { NgClass, SlicePipe } from '@angular/common';
+import { TaskService, Task } from '../../services/task';
 
 interface CalendarEvent {
-  id: number;
+  id:    number;
   title: string;
-  date: string; // 'YYYY-MM-DD'
-  time: string;
+  date:  string; // 'YYYY-MM-DD'
+  time:  string;
   color: 'green' | 'orange' | 'purple' | 'blue' | 'cyan';
+  priority?: string;
+}
+
+// Mappe la priorité de la tâche vers une couleur de calendrier
+function priorityToColor(p: string): CalendarEvent['color'] {
+  return ({ high: 'orange', medium: 'blue', low: 'green' } as any)[p] ?? 'cyan';
 }
 
 @Component({
@@ -18,23 +25,29 @@ interface CalendarEvent {
 })
 export class CalendarComponent {
 
-  today = new Date();
+  taskService = inject(TaskService);
+
+  today        = new Date();
   currentYear  = signal(this.today.getFullYear());
-  currentMonth = signal(this.today.getMonth()); // 0-indexed
+  currentMonth = signal(this.today.getMonth());
 
-  events = signal<CalendarEvent[]>([
-    { id: 1, title: 'Design landing page', date: '2026-03-05', time: '10:00 AM', color: 'green'  },
-    { id: 2, title: 'Team meeting',        date: '2026-03-05', time: '2:00 PM',  color: 'orange' },
-    { id: 3, title: 'Code review',         date: '2026-03-08', time: '11:00 AM', color: 'purple' },
-    { id: 4, title: 'Client presentation', date: '2026-03-12', time: '3:00 PM',  color: 'orange' },
-    { id: 5, title: 'Update docs',         date: '2026-03-12', time: '5:00 PM',  color: 'cyan'   },
-    { id: 6, title: 'Sprint planning',     date: '2026-03-18', time: '9:00 AM',  color: 'green'  },
-    { id: 7, title: 'Design review',       date: '2026-03-22', time: '2:00 PM',  color: 'blue'   },
-  ]);
+  monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin',
+                'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  dayNames   = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 
-  monthNames = ['January','February','March','April','May','June',
-                'July','August','September','October','November','December'];
-  dayNames   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  // Convertit les tâches avec dueDate en CalendarEvent
+  events = computed<CalendarEvent[]>(() =>
+    this.taskService.tasks()
+      .filter(t => !!t.dueDate)
+      .map(t => ({
+        id:       t.id,
+        title:    t.name,
+        date:     t.dueDate.substring(0, 10), // 'YYYY-MM-DD'
+        time:     'Échéance',
+        color:    priorityToColor(t.priority),
+        priority: t.priority,
+      }))
+  );
 
   monthLabel = computed(() =>
     `${this.monthNames[this.currentMonth()]} ${this.currentYear()}`
@@ -43,8 +56,8 @@ export class CalendarComponent {
   calendarDays = computed(() => {
     const year  = this.currentYear();
     const month = this.currentMonth();
-    const firstDay   = new Date(year, month, 1).getDay();
-    const daysInMonth= new Date(year, month + 1, 0).getDate();
+    const firstDay    = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const days: (number | null)[] = [];
 
     for (let i = 0; i < firstDay; i++) days.push(null);
@@ -58,7 +71,6 @@ export class CalendarComponent {
     const year  = this.currentYear();
     const month = this.currentMonth();
 
-    // Grouper par date pour la semaine à venir
     const grouped: { [date: string]: CalendarEvent[] } = {};
     this.events()
       .filter(e => {
@@ -118,5 +130,12 @@ export class CalendarComponent {
   formatUpcomingDate(dateStr: string): string {
     const d = new Date(dateStr);
     return `${this.monthNames[d.getMonth()]} ${d.getDate()}`;
+  }
+
+  // Statut lisible pour la section "upcoming"
+  taskStatus(t: CalendarEvent): string {
+    const task = this.taskService.tasks().find(tk => tk.id === t.id);
+    if (!task) return '';
+    return ({ todo: 'À faire', inprogress: 'En cours', done: 'Terminé' } as any)[task.status] ?? '';
   }
 }

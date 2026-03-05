@@ -1,10 +1,10 @@
 .sidebar {
   width: 72px;
   height: 100vh;
-  position: sticky;   /* ← fixe la sidebar */
+  position: sticky;
   top: 0;
   left: 0;
-  flex-shrink: 0;     /* ← empêche la sidebar de rétrécir */
+  flex-shrink: 0;
   background: #13161e;
   border-right: 1px solid rgba(255,255,255,0.07);
   display: flex;
@@ -14,21 +14,28 @@
   gap: 8px;
   z-index: 100;
 }
+
+/* ── Avatar initiales ─────────────────────────────────────────── */
 .avatar {
   width: 40px;
   height: 40px;
-  background: #10b981;
   border-radius: 12px;
+  background: linear-gradient(135deg, #00e5a0, #00c4e8);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 16px;
-  color: #fff;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: #080a0f;
   margin-bottom: 8px;
   font-family: 'Sora', sans-serif;
+  cursor: default;
+  user-select: none;
+  flex-shrink: 0;
 }
 
+/* ── Nav items ────────────────────────────────────────────────── */
 .nav-item {
   width: 48px;
   height: 48px;
@@ -58,6 +65,18 @@
   height: 22px;
 }
 
+/* ── Bouton déconnexion ───────────────────────────────────────── */
+.nav-item--logout {
+  color: rgba(255, 255, 255, 0.25);
+  margin-top: 4px;
+}
+
+.nav-item--logout:hover {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+}
+
+/* ── Spacer ───────────────────────────────────────────────────── */
 .spacer {
   flex: 1;
 }

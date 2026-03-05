@@ -143,4 +143,12 @@ class AuthController extends Controller
             abort(400, "Provider '{$provider}' non supporté.");
         }
     }
+    public function users(): JsonResponse
+{
+    $users = \App\Models\User::select('id', 'name', 'email', 'avatar')
+        ->orderBy('name')
+        ->get();
+
+    return response()->json($users);
+}
 }

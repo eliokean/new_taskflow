@@ -4,3 +4,13 @@
     <router-outlet />
   </main>
 </div>
+
+<!-- Spinner global — visible pendant le chargement initial -->
+@if (loading.isLoading()) {
+  <div class="loading-overlay">
+    <div class="loading-box">
+      <div class="spinner-ring"></div>
+      <span class="loading-text">Chargement...</span>
+    </div>
+  </div>
+}

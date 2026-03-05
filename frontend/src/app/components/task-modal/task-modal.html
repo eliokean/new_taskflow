@@ -5,13 +5,13 @@
     <div class="modal-header">
       <div class="header-left">
         @if (currentProject()) {
-          <span class="proj-badge">{{ currentProject()!.name }}</span>
+          <span class="proj-badge">{{ currentProject()!.title }}</span>
         }
-        <h2>{{ mode === 'edit' ? 'Edit Task' : 'New Task' }}</h2>
+        <h2>{{ mode === 'edit' ? 'Modifier la tâche' : 'Nouvelle tâche' }}</h2>
       </div>
       <div class="header-right">
         @if (mode === 'edit' && task) {
-          <button class="delete-btn" (click)="delete()" title="Delete task">
+          <button class="delete-btn" (click)="delete()" title="Supprimer la tâche">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
@@ -19,7 +19,7 @@
             </svg>
           </button>
         }
-        <button class="close-btn" (click)="dismiss()" aria-label="Close">
+        <button class="close-btn" (click)="dismiss()" aria-label="Fermer">
           <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
@@ -28,33 +28,34 @@
       </div>
     </div>
 
-    <!-- Title -->
+    <!-- Erreur -->
+    @if (errorMsg()) {
+      <div class="error-banner">{{ errorMsg() }}</div>
+    }
+
+    <!-- Titre -->
     <div class="title-field">
       <input
         type="text"
         [value]="name()"
         (input)="name.set($any($event.target).value)"
-        placeholder="Enter task title..."
+        placeholder="Titre de la tâche..."
         class="title-input"
       />
     </div>
 
-    <!-- Row 1: Project + Priority -->
+    <!-- Ligne 1 : Projet + Priorité -->
     <div class="form-grid">
       <div class="form-group">
         <label>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
           </svg>
-          Project
+          Projet
         </label>
-        <select
-          class="select-field"
-          [value]="selProject()"
-          (change)="selProject.set($any($event.target).value)"
-        >
-          @for (p of svc.projects(); track p.id) {
-            <option [value]="p.name">{{ p.name }}</option>
+        <select class="select-field" [value]="selProject()" (change)="selProject.set($any($event.target).value)">
+          @for (p of projectSvc.projects(); track p.id) {
+            <option [value]="p.title">{{ p.title }}</option>
           }
         </select>
       </div>
@@ -64,51 +65,38 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="14 2 18 6 7 17 3 17 3 13 14 2"/>
           </svg>
-          Priority
+          Priorité
         </label>
         <div class="priority-tabs">
           @for (p of priorities; track p.value) {
-            <button
-              class="priority-tab"
-              [class.active]="priority() === p.value"
-              [style.--p-color]="p.color"
-              (click)="priority.set(p.value)"
-            >
-              <span class="p-dot" [style.background]="p.color"></span>
-              {{ p.label }}
+            <button class="priority-tab" [class.active]="priority() === p.value" [style.--p-color]="p.color" (click)="priority.set(p.value)">
+              <span class="p-dot" [style.background]="p.color"></span>{{ p.label }}
             </button>
           }
         </div>
       </div>
     </div>
 
-    <!-- Row 2: Due Date -->
+    <!-- Date limite -->
     <div class="form-grid">
       <div class="form-group">
         <label>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <path d="M16 2v4M8 2v4M3 10h18"/>
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
           </svg>
-          Due Date
+          Date limite
         </label>
-        <input
-          type="date"
-          class="select-field"
-          [value]="dueDate()"
-          (input)="dueDate.set($any($event.target).value)"
-        />
+        <input type="date" class="select-field" [value]="dueDate()" (input)="dueDate.set($any($event.target).value)" />
       </div>
     </div>
 
     <!-- Description -->
-    <div class="form-group">
+    <div class="form-group" style="margin-bottom:16px">
       <label>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
         </svg>
         Description
       </label>
@@ -116,25 +104,100 @@
         class="select-field textarea"
         [value]="description()"
         (input)="description.set($any($event.target).value)"
-        placeholder="Add task description..."
-        rows="3"
+        placeholder="Ajouter une description..."
+        rows="4"
       ></textarea>
     </div>
 
-    <!-- Status (edit only) -->
+    <!-- ── Assignation ───────────────────────────────────────────── -->
+    <div class="form-group" style="margin-bottom:16px">
+      <label>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        Assignés
+        @if (selectedUsers().length > 0) {
+          <span style="color:#10b981; font-size:11px; margin-left:4px; text-transform:none; letter-spacing:0">
+            {{ selectedUsers().length }} sélectionné{{ selectedUsers().length > 1 ? 's' : '' }}
+          </span>
+        }
+      </label>
+
+      <!-- Avatars sélectionnés -->
+      @if (selectedUsers().length > 0) {
+        <div class="assignee-select" style="margin-bottom:8px; cursor:default">
+          <div class="assignee-stack">
+            @for (u of selectedUsers().slice(0, 5); track u.id) {
+              <div class="small-av" [style.background]="avatarColor(u.name)" [title]="u.name">
+                {{ initials(u.name) }}
+              </div>
+            }
+            @if (selectedUsers().length > 5) {
+              <div class="small-av more">+{{ selectedUsers().length - 5 }}</div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Champ de recherche -->
+      <div style="position:relative; margin-bottom:6px">
+        <input
+          type="text"
+          class="select-field"
+          [value]="userSearch()"
+          (input)="userSearch.set($any($event.target).value)"
+          placeholder="Rechercher par nom ou email..."
+          style="padding-left:38px"
+        />
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none"
+             width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+      </div>
+
+      <!-- Liste des utilisateurs -->
+      <div class="members-section">
+        @if (loadingUsers()) {
+          <div style="padding:20px;text-align:center;color:#6b7280;font-size:13px;font-family:'Sora',sans-serif">
+            Chargement...
+          </div>
+        } @else if (filteredUsers().length === 0) {
+          <div style="padding:20px;text-align:center;color:#6b7280;font-size:13px;font-family:'Sora',sans-serif">
+            Aucun utilisateur trouvé
+          </div>
+        } @else {
+          <div class="members-list">
+            @for (u of filteredUsers(); track u.id) {
+              <button class="member-row" [class.selected]="isSelected(u.id)" (click)="toggleUser(u)">
+                <div class="row-av" [style.background]="avatarColor(u.name)">{{ initials(u.name) }}</div>
+                <div class="row-info">
+                  <span class="row-name">{{ u.name }}</span>
+                  <span class="row-role">{{ u.email }}</span>
+                </div>
+                <div class="row-check" [class.checked]="isSelected(u.id)">
+                  @if (isSelected(u.id)) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  }
+                </div>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Statut (modification uniquement) -->
     @if (mode === 'edit') {
       <div class="form-group">
-        <label>Status</label>
+        <label>Statut</label>
         <div class="status-tabs">
           @for (s of statuses; track s.value) {
-            <button
-              class="status-tab"
-              [class.active]="status() === s.value"
-              [style.--s-color]="s.color"
-              (click)="status.set(s.value)"
-            >
-              <span class="s-dot" [style.background]="s.color"></span>
-              {{ s.label }}
+            <button class="status-tab" [class.active]="status() === s.value" [style.--s-color]="s.color" (click)="status.set(s.value)">
+              <span class="s-dot" [style.background]="s.color"></span>{{ s.label }}
             </button>
           }
         </div>
@@ -143,12 +206,17 @@
 
     <!-- Actions -->
     <div class="modal-actions">
-      <button class="btn-cancel" (click)="dismiss()">Cancel</button>
-      <button class="btn-save" (click)="save()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        {{ mode === 'edit' ? 'Save Changes' : 'Create Task' }}
+      <button class="btn-cancel" (click)="dismiss()" [disabled]="saving()">Annuler</button>
+      <button class="btn-save" (click)="save()" [disabled]="saving() || !name().trim()">
+        @if (saving()) {
+          <span class="spinner"></span>
+          {{ mode === 'edit' ? 'Enregistrement...' : 'Création...' }}
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          {{ mode === 'edit' ? 'Enregistrer' : 'Créer la tâche' }}
+        }
       </button>
     </div>
 

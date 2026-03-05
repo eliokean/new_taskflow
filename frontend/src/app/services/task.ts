@@ -1,4 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 export type TaskStatus   = 'todo' | 'inprogress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high';
@@ -10,7 +13,7 @@ export interface Task {
   description: string;
   done:        boolean;
   tag:         'done' | 'late' | 'today' | 'new';
-  project:     string;          // nom du projet (clé de liaison)
+  project:     string;
   status:      TaskStatus;
   priority:    TaskPriority;
   dueDate:     string;
@@ -26,83 +29,140 @@ export interface Project {
   color:       ProjectColor;
 }
 
+// ── Mapping Laravel ↔ local ────────────────────────────────────────
+interface ApiTask {
+  id:          number;
+  project_id:  number;
+  titre:       string;
+  description: string;
+  statut:      'a_faire' | 'en_cours' | 'termine';
+  priorite:    'basse' | 'moyenne' | 'haute' | null;
+  due_date:    string | null;
+  project?:    { id: number; intitule: string; color: string };
+}
+
+function toStatus(s: ApiTask['statut']): TaskStatus {
+  return ({ a_faire: 'todo', en_cours: 'inprogress', termine: 'done' } as const)[s];
+}
+function toApiStatus(s: TaskStatus): ApiTask['statut'] {
+  return ({ todo: 'a_faire', inprogress: 'en_cours', done: 'termine' } as const)[s];
+}
+function toPriority(p: ApiTask['priorite']): TaskPriority {
+  return ({ basse: 'low', moyenne: 'medium', haute: 'high', null: 'medium' } as any)[p ?? 'null'];
+}
+function toApiPriority(p: TaskPriority): ApiTask['priorite'] {
+  return ({ low: 'basse', medium: 'moyenne', high: 'haute' } as const)[p];
+}
+
+function toTask(api: ApiTask, projectName = ''): Task {
+  return {
+    id:          api.id,
+    name:        api.titre,
+    description: api.description ?? '',
+    done:        api.statut === 'termine',
+    tag:         api.statut === 'termine' ? 'done' : 'late',
+    project:     projectName || api.project?.intitule || '',
+    status:      toStatus(api.statut),
+    priority:    toPriority(api.priorite),
+    dueDate:     api.due_date ?? '',
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════
 @Injectable({ providedIn: 'root' })
 export class TaskService {
 
-  tasks = signal<Task[]>([
-    { id: 1, name: 'Setup project structure', description: '', done: true,  tag: 'done',  project: 'Website Redesign', status: 'done',       priority: 'low',    dueDate: '' },
-    { id: 2, name: 'Design homepage mockup',  description: '', done: false, tag: 'late',  project: 'Website Redesign', status: 'inprogress', priority: 'high',   dueDate: '' },
-    { id: 3, name: 'Implement auth system',   description: '', done: false, tag: 'late',  project: 'Mobile App v2',    status: 'todo',       priority: 'high',   dueDate: '' },
-    { id: 4, name: 'Write API documentation', description: '', done: false, tag: 'today', project: 'API Integration',  status: 'inprogress', priority: 'medium', dueDate: '' },
-    { id: 5, name: 'Deploy to staging',       description: '', done: false, tag: 'late',  project: 'Website Redesign', status: 'todo',       priority: 'medium', dueDate: '' },
-    { id: 6, name: 'Code review backend',     description: '', done: false, tag: 'late',  project: 'API Integration',  status: 'todo',       priority: 'low',    dueDate: '' },
-  ]);
+  private readonly API = 'http://localhost:8000/api';
 
-  projects = signal<Project[]>([
-    { id: 1, name: 'Website Redesign', description: '', taskCount: 12, dueDate: 'Mar 15', progress: 70, color: 'teal'   },
-    { id: 2, name: 'Mobile App v2',    description: '', taskCount: 8,  dueDate: 'Apr 1',  progress: 40, color: 'blue'   },
-    { id: 3, name: 'API Integration',  description: '', taskCount: 5,  dueDate: 'Mar 28', progress: 20, color: 'purple' },
-  ]);
+  tasks    = signal<Task[]>([]);
+  projects = signal<Project[]>([]);
 
   total     = computed(() => this.tasks().length);
   completed = computed(() => this.tasks().filter(t => t.done).length);
   overdue   = computed(() => this.tasks().filter(t => !t.done).length);
+  projectNames = computed(() => this.projects().map(p => p.name));
 
-  // ── Project helpers ──────────────────────────────────────────────
+  constructor(private http: HttpClient) {}
 
+  // ── Tâches d'un projet (créateur) ─────────────────────────────
+  fetchTasks(projectId: number, projectName: string): Observable<ApiTask[]> {
+    return this.http.get<ApiTask[]>(`${this.API}/projects/${projectId}/tasks`).pipe(
+      tap(list => {
+        const newTasks = list.map(t => toTask(t, projectName));
+        this.tasks.update(existing => {
+          const ids = new Set(newTasks.map(t => t.id));
+          return [...existing.filter(t => !ids.has(t.id)), ...newTasks];
+        });
+      })
+    );
+  }
+
+  // ── Tâches assignées à l'utilisateur connecté ─────────────────
+  fetchAssigned(): Observable<ApiTask[]> {
+    return this.http.get<ApiTask[]>(`${this.API}/tasks/assigned`).pipe(
+      tap(list => {
+        const newTasks = list.map(t => toTask(t));
+        this.tasks.update(existing => {
+          const ids = new Set(newTasks.map(t => t.id));
+          return [...existing.filter(t => !ids.has(t.id)), ...newTasks];
+        });
+      })
+    );
+  }
+
+  // ── Ajouter une tâche ──────────────────────────────────────────
+  addTask(data: Omit<Task, 'id' | 'done' | 'tag'>, projectId: number): Observable<ApiTask> {
+    return this.http.post<ApiTask>(`${this.API}/projects/${projectId}/tasks`, {
+      titre:       data.name,
+      description: data.description,
+      statut:      toApiStatus(data.status),
+      priorite:    toApiPriority(data.priority),
+      due_date:    data.dueDate || null,
+    }).pipe(
+      tap(api => {
+        this.tasks.update(ts => [...ts, toTask(api, data.project)]);
+      })
+    );
+  }
+
+  // ── Modifier une tâche ─────────────────────────────────────────
+  updateTask(id: number, patch: Partial<Omit<Task, 'id'>>): Observable<ApiTask> {
+    return this.http.put<ApiTask>(`${this.API}/tasks/${id}`, {
+      ...(patch.name        && { titre:       patch.name }),
+      ...(patch.description && { description: patch.description }),
+      ...(patch.status      && { statut:      toApiStatus(patch.status) }),
+      ...(patch.priority    && { priorite:    toApiPriority(patch.priority) }),
+      ...(patch.dueDate     && { due_date:    patch.dueDate }),
+    }).pipe(
+      tap(api => {
+        this.tasks.update(ts =>
+          ts.map(t => t.id === id ? { ...t, ...toTask(api, t.project) } : t)
+        );
+      })
+    );
+  }
+
+  // ── Supprimer une tâche ────────────────────────────────────────
+  deleteTask(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API}/tasks/${id}`).pipe(
+      tap(() => this.tasks.update(ts => ts.filter(t => t.id !== id)))
+    );
+  }
+
+  // ── Toggle (met à jour le statut) ──────────────────────────────
+  toggleTask(id: number): void {
+    const task = this.tasks().find(t => t.id === id);
+    if (!task) return;
+    const newStatus: TaskStatus = task.done ? 'todo' : 'done';
+    this.updateTask(id, { status: newStatus }).subscribe();
+  }
+
+  // ── Projets (lecture seule, géré par ProjectService) ──────────
   getProject(id: number): Project | undefined {
     return this.projects().find(p => p.id === id);
   }
 
-  addProject(name: string, description: string, color: ProjectColor): Project {
-    const p: Project = {
-      id: Date.now(), name, description, color,
-      taskCount: 0, dueDate: '', progress: 0
-    };
-    this.projects.update(ps => [...ps, p]);
-    return p;
-  }
-
-  updateProject(id: number, patch: Partial<Omit<Project, 'id'>>) {
-    this.projects.update(ps =>
-      ps.map(p => p.id === id ? { ...p, ...patch } : p)
-    );
-  }
-
-  deleteProject(id: number) {
-    this.projects.update(ps => ps.filter(p => p.id !== id));
-    this.tasks.update(ts => ts.filter(t => {
-      const proj = this.projects().find(p => p.id === id);
-      return proj ? t.project !== proj.name : true;
-    }));
-  }
-
-  projectNames = computed(() => this.projects().map(p => p.name));
-
-  // ── Task helpers ─────────────────────────────────────────────────
-
-  toggleTask(id: number) {
-    this.tasks.update(tasks =>
-      tasks.map(t => t.id === id
-        ? { ...t, done: !t.done, tag: !t.done ? 'done' : 'late' as Task['tag'] }
-        : t
-      )
-    );
-  }
-
-  addTask(data: Omit<Task, 'id' | 'done' | 'tag'>): Task {
-    const t: Task = { id: Date.now(), done: false, tag: 'new', ...data };
-    this.tasks.update(ts => [...ts, t]);
-    return t;
-  }
-
-  updateTask(id: number, patch: Partial<Omit<Task, 'id'>>) {
-    this.tasks.update(ts =>
-      ts.map(t => t.id === id ? { ...t, ...patch } : t)
-    );
-  }
-
-  deleteTask(id: number) {
-    this.tasks.update(ts => ts.filter(t => t.id !== id));
+  syncProjects(projects: Project[]) {
+    this.projects.set(projects);
   }
 }

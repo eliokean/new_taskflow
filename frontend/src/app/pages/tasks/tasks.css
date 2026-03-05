@@ -1,207 +1,233 @@
 .tasks-page {
   flex: 1;
   overflow-y: auto;
-  padding: 40px 48px;
+  padding: 20px 16px;
   background: #0d0f14;
   color: #e8eaf0;
   font-family: 'Sora', sans-serif;
+
+  @media (min-width: 576px) { padding: 28px 24px; }
+  @media (min-width: 768px) { padding: 36px 36px; }
+  @media (min-width: 1024px) { padding: 40px 48px; }
 }
 
-/* ── Header ── */
+/* ── Header ─────────────────────────────────────────────────────── */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
+
+  @media (min-width: 576px) { margin-bottom: 28px; }
 }
 .header h1 {
-  font-size: 36px; font-weight: 800;
-  letter-spacing: -1px; margin: 0 0 6px;
+  font-size: clamp(24px, 5vw, 36px);
+  font-weight: 800; letter-spacing: -1px; margin: 0 0 6px;
 }
 .header p {
-  color: #6b7280; font-size: 14px;
+  color: #6b7280; font-size: 13px;
   margin: 0; max-width: 500px; line-height: 1.5;
-}
-.btn-create {
-  display: flex; align-items: center; gap: 8px;
-  background: #10b981; color: #fff;
-  border: none; border-radius: 10px;
-  padding: 12px 22px; font-size: 14px; font-weight: 700;
-  font-family: 'Sora', sans-serif; cursor: pointer;
-  white-space: nowrap; transition: all .2s;
-  box-shadow: 0 0 20px rgba(16,185,129,.3);
-}
-.btn-create:hover { background: #059669; transform: translateY(-1px); }
 
-/* ── Toolbar ── */
+  @media (min-width: 576px) { font-size: 14px; }
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────── */
 .toolbar {
-  display: flex; gap: 12px;
-  align-items: center; margin-bottom: 24px;
+  display: flex; gap: 10px;
+  align-items: center; margin-bottom: 20px;
+
+  @media (min-width: 576px) { gap: 12px; margin-bottom: 24px; }
 }
 .search-wrap {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 8px;
   background: #13161e;
   border: 1px solid rgba(255,255,255,.07);
-  border-radius: 10px; padding: 0 16px;
-  flex: 1; max-width: 380px;
+  border-radius: 10px; padding: 0 12px;
+  flex: 1;
+
+  @media (min-width: 576px) { padding: 0 16px; max-width: 380px; }
 }
-.search-wrap svg { color: #6b7280; flex-shrink: 0; }
+.search-wrap svg { color: #6b7280; flex-shrink: 0; width: 16px; height: 16px;
+  @media (min-width: 576px) { width: 18px; height: 18px; }
+}
 .search-wrap input {
   background: transparent; border: none; outline: none;
-  color: #e8eaf0; font-size: 14px;
-  padding: 12px 0; width: 100%;
+  color: #e8eaf0; font-size: 13px;
+  padding: 11px 0; width: 100%;
   font-family: 'Sora', sans-serif;
-}
-.search-wrap input::placeholder { color: #374151; }
-.toolbar-actions { display: flex; gap: 8px; margin-left: auto; }
-.btn-action {
-  display: flex; align-items: center; gap: 7px;
-  background: #13161e;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 10px; padding: 10px 18px;
-  color: #9ca3af; font-size: 13px; font-weight: 500;
-  font-family: 'Sora', sans-serif;
-  cursor: pointer; transition: all .2s;
-}
-.btn-action:hover { border-color: rgba(255,255,255,.15); color: #e8eaf0; }
 
-/* ── Stats ── */
+  @media (min-width: 576px) { font-size: 14px; padding: 12px 0; }
+  &::placeholder { color: #374151; }
+}
+
+/* ── Stats ───────────────────────────────────────────────────────── */
 .kanban-stats {
-  display: flex; align-items: center;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   background: #13161e;
   border: 1px solid rgba(255,255,255,.07);
-  border-radius: 14px; padding: 20px 24px;
-  margin-bottom: 32px;
-  width: fit-content; gap: 0;
+  border-radius: 14px;
+  padding: 14px 8px;
+  margin-bottom: 24px;
+  width: 100%;
+  gap: 0;
+
+  @media (min-width: 576px) { padding: 16px 12px; margin-bottom: 28px; }
+  @media (min-width: 768px) { width: fit-content; padding: 20px 24px; margin-bottom: 32px; }
 }
+
+/* Séparateurs via pseudo-éléments sur les items 1,2,3 */
 .ks-item {
   display: flex; flex-direction: column;
-  align-items: center; gap: 4px;
-  padding: 0 28px;
+  align-items: center; gap: 3px;
+  padding: 0 8px;
+  position: relative;
+
+  @media (min-width: 576px) { padding: 0 16px; gap: 4px; }
+  @media (min-width: 768px) { padding: 0 28px; }
+
+  /* Séparateur droit sauf dernier */
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute; right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 1px; height: 56px;
+    background: rgba(255,255,255,.07);
+  }
 }
+
+/* Cacher les .ks-divider d'origine (remplacés par pseudo-éléments) */
+.ks-divider { display: none; }
+
 .ks-icon {
-  width: 38px; height: 38px; border-radius: 11px;
+  width: 32px; height: 32px; border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+
+  @media (min-width: 576px) { width: 36px; height: 36px; border-radius: 10px; }
+  @media (min-width: 768px) { width: 38px; height: 38px; border-radius: 11px; margin-bottom: 6px; }
+
+  svg { width: 14px; height: 14px;
+    @media (min-width: 576px) { width: 16px; height: 16px; }
+    @media (min-width: 768px) { width: 18px; height: 18px; }
+  }
 }
-.ks-icon-total    { background: rgba(99,102,241,.12); }
-.ks-icon-total    svg { stroke: #818cf8; }
-.ks-icon-todo     { background: rgba(156,163,175,.1); }
-.ks-icon-todo     svg { stroke: #9ca3af; }
-.ks-icon-progress { background: rgba(167,139,250,.12); }
-.ks-icon-progress svg { stroke: #a78bfa; }
-.ks-icon-done     { background: rgba(16,185,129,.12); }
-.ks-icon-done     svg { stroke: #10b981; }
+.ks-icon-total    { background: rgba(99,102,241,.12); svg { stroke: #818cf8; } }
+.ks-icon-todo     { background: rgba(156,163,175,.1);  svg { stroke: #9ca3af; } }
+.ks-icon-progress { background: rgba(167,139,250,.12); svg { stroke: #a78bfa; } }
+.ks-icon-done     { background: rgba(16,185,129,.12);  svg { stroke: #10b981; } }
+
 .ks-num {
-  font-size: 24px; font-weight: 800;
-  color: #e8eaf0; line-height: 1;
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 800; color: #e8eaf0; line-height: 1;
 }
 .ks-label {
-  font-size: 11px; color: #6b7280;
+  font-size: 10px; color: #6b7280;
   font-weight: 500; letter-spacing: .3px;
-}
-.ks-divider {
-  width: 1px; height: 56px;
-  background: rgba(255,255,255,.07);
-  flex-shrink: 0;
+
+  @media (min-width: 576px) { font-size: 11px; }
 }
 .todo-color     { color: #9ca3af !important; }
 .progress-color { color: #a78bfa !important; }
 .done-color     { color: #10b981 !important; }
 
-/* ── Kanban Board ── */
+/* ── Kanban Board ────────────────────────────────────────────────── */
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  align-items: start; /* colonnes hauteur naturelle */
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: start;
+
+  @media (min-width: 640px)  { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); gap: 20px; }
 }
 
-/* ── Colonne ── */
+/* ── Colonne ─────────────────────────────────────────────────────── */
 .kanban-col {
   background: #13161e;
   border: 1px solid rgba(255,255,255,.07);
   border-radius: 16px;
   display: flex; flex-direction: column;
+
+  /* Sur mobile, la 3e colonne (Terminées) passe en pleine largeur sous les 2 premières */
+  @media (min-width: 640px) and (max-width: 1023px) {
+    &:last-child { grid-column: span 2; }
+  }
 }
 
 .col-header {
   display: flex; align-items: center;
   justify-content: space-between;
-  padding: 18px 20px 14px;
+  padding: 14px 16px 12px;
   border-bottom: 1px solid rgba(255,255,255,.06);
+
+  @media (min-width: 576px) { padding: 18px 20px 14px; }
 }
-.col-title-row {
-  display: flex; align-items: center; gap: 8px;
-}
-.col-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-}
+.col-title-row { display: flex; align-items: center; gap: 8px; }
+.col-dot { width: 8px; height: 8px; border-radius: 50%; }
 .dot-grey   { background: #6b7280; }
 .dot-purple { background: #a78bfa; }
 .dot-green  { background: #10b981; }
-.col-title {
-  font-size: 14px; font-weight: 700; color: #e8eaf0;
+.col-title { font-size: 13px; font-weight: 700; color: #e8eaf0;
+  @media (min-width: 576px) { font-size: 14px; }
 }
 .col-count {
   background: rgba(255,255,255,.08);
   color: #9ca3af; font-size: 11px; font-weight: 700;
   padding: 2px 9px; border-radius: 20px;
 }
-.col-add {
-  width: 28px; height: 28px; border-radius: 8px;
-  background: rgba(255,255,255,.06); border: none;
-  color: #9ca3af; font-size: 18px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .2s;
-}
-.col-add:hover { background: rgba(255,255,255,.13); color: #e8eaf0; }
 
-/* Col body — PAS de hauteur fixe, PAS de overflow */
+/* ── Corps colonne ───────────────────────────────────────────────── */
 .col-body {
-  padding: 14px;
-  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+
+  @media (min-width: 576px) { padding: 14px; gap: 10px; }
 }
 
-/* ── Carte ── */
+/* ── Carte ───────────────────────────────────────────────────────── */
 .kanban-card {
   background: #1a1e28;
   border: 1px solid rgba(255,255,255,.07);
-  border-radius: 12px; padding: 14px 16px;
+  border-radius: 12px; padding: 12px 14px;
   cursor: pointer; transition: all .2s;
   animation: cardIn .3s cubic-bezier(.16,1,.3,1) both;
+
+  @media (min-width: 576px) { padding: 14px 16px; }
+
+  &:hover {
+    border-color: rgba(255,255,255,.15);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  }
 }
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.kanban-card:hover {
-  border-color: rgba(255,255,255,.15);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,.3);
-}
 .card-active {
   background: rgba(99,102,241,.08);
   border-color: rgba(99,102,241,.2) !important;
+  &:hover { border-color: rgba(99,102,241,.38) !important; }
 }
-.card-active:hover {
-  border-color: rgba(99,102,241,.38) !important;
-}
-.card-done { opacity: .55; }
-.card-done:hover { opacity: .78; }
+.card-done { opacity: .55; &:hover { opacity: .78; } }
 
 .kc-top {
   display: flex; justify-content: space-between;
   align-items: center; margin-bottom: 8px;
+  gap: 8px;
 }
 .kc-project {
   font-size: 10px; font-weight: 600;
   color: #6b7280; text-transform: uppercase;
   letter-spacing: .5px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0;
 }
 .kc-priority {
   font-size: 10px; font-weight: 700;
   padding: 2px 9px; border-radius: 5px;
+  flex-shrink: 0;
 }
 .kc-priority.haute   { background: #7f1d1d; color: #fca5a5; }
 .kc-priority.moyenne { background: #78350f; color: #fcd34d; }
@@ -209,44 +235,49 @@
 
 .kc-done-badge {
   font-size: 10px; font-weight: 700;
-  color: #10b981;
-  background: rgba(16,185,129,.1);
+  color: #10b981; background: rgba(16,185,129,.1);
   padding: 2px 9px; border-radius: 5px;
+  flex-shrink: 0;
 }
 .kc-title {
-  font-size: 14px; font-weight: 600;
+  font-size: 13px; font-weight: 600;
   color: #e8eaf0; line-height: 1.45;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+
+  @media (min-width: 576px) { font-size: 14px; margin-bottom: 12px; }
 }
-.done-title {
-  text-decoration: line-through; color: #6b7280;
-}
+.done-title { text-decoration: line-through; color: #6b7280; }
+
 .kc-footer {
-  display: flex; justify-content: space-between;
-  align-items: center;
+  display: flex; justify-content: space-between; align-items: center;
 }
 .kc-meta {
   display: flex; align-items: center; gap: 5px;
   font-size: 11px; color: #6b7280;
 }
 .kc-btn {
-  width: 26px; height: 26px; border-radius: 7px;
+  width: 28px; height: 28px; border-radius: 7px;
   background: rgba(16,185,129,.1); border: none;
   color: #10b981; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all .2s;
+  /* Zone de tap mobile */
+  min-width: 28px;
+
+  &:hover { background: rgba(16,185,129,.25); }
 }
-.kc-btn:hover { background: rgba(16,185,129,.25); }
 .kc-undo {
   background: rgba(107,114,128,.1); color: #9ca3af;
+  &:hover { background: rgba(107,114,128,.2); color: #e8eaf0; }
 }
-.kc-undo:hover { background: rgba(107,114,128,.2); color: #e8eaf0; }
 
-/* ── Vide ── */
+/* ── Vide ────────────────────────────────────────────────────────── */
 .col-empty {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 8px; padding: 28px 16px;
+  gap: 8px; padding: 24px 16px;
   color: #374151; font-size: 13px;
+
+  @media (min-width: 576px) { padding: 28px 16px; }
+  svg { opacity: .35; }
 }
-.col-empty svg { opacity: .35; }

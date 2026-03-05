@@ -9,38 +9,37 @@
     <a routerLink="/" class="logo"><span class="logo-dot"></span>TaskFlow</a>
 
     <div class="lp-center">
-      <h2>Start your<br><span>journey.</span></h2>
-      <p>Set up your workspace in under 2 minutes. No credit card required.</p>
+      <h2>Commencez votre<br><span>aventure.</span></h2>
+      <p>Configurez votre espace de travail en moins de 2 minutes. Sans carte bancaire.</p>
     </div>
 
-    <!-- Checklist -->
     <div class="perks">
       <div class="perk">
         <span class="perk-icon">✓</span>
         <div>
-          <div class="perk-title">Free forever plan</div>
-          <div class="perk-desc">Up to 3 projects and 5 team members</div>
+          <div class="perk-title">Plan gratuit à vie</div>
+          <div class="perk-desc">Jusqu'à 3 projets et 5 membres d'équipe</div>
         </div>
       </div>
       <div class="perk">
         <span class="perk-icon">✓</span>
         <div>
-          <div class="perk-title">No credit card needed</div>
-          <div class="perk-desc">Start immediately, upgrade anytime</div>
+          <div class="perk-title">Sans carte bancaire</div>
+          <div class="perk-desc">Démarrez immédiatement, passez au premium quand vous voulez</div>
         </div>
       </div>
       <div class="perk">
         <span class="perk-icon">✓</span>
         <div>
-          <div class="perk-title">Full Kanban & Calendar</div>
-          <div class="perk-desc">All core features included from day one</div>
+          <div class="perk-title">Kanban & Calendrier complets</div>
+          <div class="perk-desc">Toutes les fonctionnalités incluses dès le premier jour</div>
         </div>
       </div>
       <div class="perk">
         <span class="perk-icon">✓</span>
         <div>
-          <div class="perk-title">Real-time collaboration</div>
-          <div class="perk-desc">Invite your team and ship together</div>
+          <div class="perk-title">Collaboration en temps réel</div>
+          <div class="perk-desc">Invitez votre équipe et avancez ensemble</div>
         </div>
       </div>
     </div>
@@ -52,62 +51,87 @@
         <div class="sp-av" style="background:#ec4899">MC</div>
         <div class="sp-av" style="background:#f97316">ER</div>
       </div>
-      <span>Join <strong>12,000+</strong> teams already using TaskFlow</span>
+      <span>Rejoignez <strong>12 000+</strong> équipes qui utilisent déjà TaskFlow</span>
     </div>
   </div>
 
-  <!-- Right Panel (form) -->
+  <!-- Right Panel -->
   <div class="right-panel">
     <div class="form-box">
       <div class="form-head">
-        <h1>Create account</h1>
-        <p>Already have one? <a routerLink="/login">Sign in →</a></p>
+        <h1>Créer un compte</h1>
+        <p>Vous avez déjà un compte ? <a routerLink="/login">Se connecter →</a></p>
       </div>
 
-      <a href="#" class="btn-social">
+      <button type="button" class="btn-social" (click)="loginWithGoogle()">
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        Sign up with Google
-      </a>
+        S'inscrire avec Google
+      </button>
 
-      <div class="divider"><span>or register with email</span></div>
+      <div class="divider"><span>ou s'inscrire par e-mail</span></div>
 
       <form (ngSubmit)="onSubmit()">
+
+        @if (errorMsg()) {
+          <div class="error-msg">{{ errorMsg() }}</div>
+        }
+
         <div class="fg">
-          <label>Full name</label>
+          <label>Nom complet</label>
           <div class="input-wrap">
             <span class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
             </span>
-            <input type="text" [(ngModel)]="name" name="name" placeholder="John Doe" required />
+            <input type="text" [(ngModel)]="name" name="name" placeholder="Jean Dupont" required />
           </div>
         </div>
 
         <div class="fg">
-          <label>Work email</label>
+          <label>Adresse e-mail</label>
           <div class="input-wrap">
             <span class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
             </span>
-            <input type="email" [(ngModel)]="email" name="email" placeholder="you@company.com" required />
+            <input type="email" [(ngModel)]="email" name="email" placeholder="vous@entreprise.com" required />
           </div>
         </div>
 
         <div class="fg">
-          <label>Password</label>
+          <label>Mot de passe</label>
           <div class="input-wrap">
             <span class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
             </span>
-            <input [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" name="password" placeholder="Min. 8 characters" required (input)="checkStrength()" />
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              [(ngModel)]="password"
+              name="password"
+              placeholder="8 caractères minimum"
+              required
+              (input)="checkStrength()"
+            />
             <button type="button" class="pw-toggle" (click)="togglePassword()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
             </button>
           </div>
+
           @if (password) {
             <div class="strength-bar">
               <div class="sb-segments">
@@ -116,20 +140,29 @@
                 <div class="sb-seg" [class.filled]="strength() >= 3" [class.good]="strength() === 3"></div>
                 <div class="sb-seg" [class.filled]="strength() >= 4" [class.strong]="strength() === 4"></div>
               </div>
-              <span class="sb-label" [class]="'sl-' + strengthLabel().toLowerCase()">{{ strengthLabel() }}</span>
+              <!-- On utilise strength() pour la classe CSS, strengthLabel() pour l'affichage -->
+              <span class="sb-label" [ngClass]="{
+                'sl-weak':   strength() === 1,
+                'sl-fair':   strength() === 2,
+                'sl-good':   strength() === 3,
+                'sl-strong': strength() === 4
+              }">{{ strengthLabel() }}</span>
             </div>
           }
         </div>
 
         <div class="terms-row">
-          By creating an account you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+          En créant un compte, vous acceptez nos
+          <a href="#">Conditions d'utilisation</a> et notre
+          <a href="#">Politique de confidentialité</a>.
         </div>
 
         <button type="submit" class="btn-submit" [class.loading]="loading()" [class.success]="success()">
-          @if (!loading() && !success()) { Create free account }
-          @if (loading()) { <span class="spinner"></span> Creating account... }
-          @if (success()) { ✓ Account created! }
+          @if (!loading() && !success()) { Créer un compte gratuit }
+          @if (loading()) { <span class="spinner"></span> Création en cours... }
+          @if (success()) { ✓ Compte créé ! }
         </button>
+
       </form>
     </div>
   </div>

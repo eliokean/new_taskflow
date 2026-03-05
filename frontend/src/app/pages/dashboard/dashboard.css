@@ -1,96 +1,200 @@
+/* ── Variables ─────────────────────────────────────────────────── */
+:host {
+  --padding-x: 16px;
+  --padding-y: 20px;
+  --gap: 12px;
+}
+
+/* ── Dashboard container ───────────────────────────────────────── */
 .dashboard {
   flex: 1;
   overflow-y: auto;
-  padding: 40px 48px;
+  padding: var(--padding-y) var(--padding-x);
   background: #0d0f14;
   color: #e8eaf0;
   font-family: 'Sora', sans-serif;
-  max-width: 100%; 
+  max-width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 576px) {
+    --padding-x: 28px;
+    --padding-y: 28px;
+  }
+
+  @media (min-width: 768px) {
+    --padding-x: 40px;
+    --padding-y: 36px;
+    --gap: 16px;
+  }
+
+  @media (min-width: 1200px) {
+    --padding-x: 48px;
+    --padding-y: 40px;
+  }
 }
 
+/* ── Header ────────────────────────────────────────────────────── */
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 40px;
-}
-.header h1 { font-size: 42px; font-weight: 800; letter-spacing: -1px; }
-.header p  { color: #6b7280; font-size: 15px; margin-top: 6px; }
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
 
+  @media (min-width: 576px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+  }
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+
+  @media (min-width: 576px) { font-size: 34px; }
+  @media (min-width: 768px) { font-size: 42px; letter-spacing: -1px; }
+}
+
+.header p {
+  color: #6b7280;
+  font-size: 14px;
+  margin-top: 4px;
+
+  @media (min-width: 768px) { font-size: 15px; margin-top: 6px; }
+}
+
+/* ── Bouton nouvelle tâche ─────────────────────────────────────── */
 .btn-new {
   background: #10b981;
   color: #fff;
   border: none;
   border-radius: 50px;
-  padding: 14px 28px;
-  font-size: 15px;
+  padding: 12px 22px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+  align-self: flex-start;
+
+  @media (min-width: 576px) {
+    padding: 14px 28px;
+    font-size: 15px;
+    align-self: auto;
+  }
 }
 .btn-new:hover { background: #059669; transform: translateY(-1px); }
 
+/* ── Stats ─────────────────────────────────────────────────────── */
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
+  grid-template-columns: 1fr;
+  gap: var(--gap);
+  margin-bottom: 20px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (min-width: 768px) {
+    margin-bottom: 32px;
+  }
 }
 
+/* ── Two-col layout ────────────────────────────────────────────── */
 .two-col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: var(--gap);
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
+/* ── Section card ──────────────────────────────────────────────── */
 .section {
   background: #13161e;
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 20px;
-  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 20px 16px;
+
+  @media (min-width: 576px) {
+    border-radius: 20px;
+    padding: 24px 20px;
+  }
+
+  @media (min-width: 768px) {
+    padding: 28px;
+  }
 }
 
+/* ── Section header ────────────────────────────────────────────── */
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
-}
-.section-header h2 { font-size: 20px; font-weight: 700; }
+  margin-bottom: 16px;
 
+  @media (min-width: 768px) { margin-bottom: 20px; }
+}
+
+.section-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+
+  @media (min-width: 768px) { font-size: 20px; }
+}
+
+/* ── Bouton ajouter ────────────────────────────────────────────── */
 .btn-add {
-  width: 36px; height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #10b981;
-  border: none; cursor: pointer;
-  color: #fff; font-size: 20px;
-  display: flex; align-items: center; justify-content: center;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s;
+  flex-shrink: 0;
+
+  @media (min-width: 768px) { width: 36px; height: 36px; }
 }
 .btn-add:hover { background: #059669; transform: scale(1.1); }
 
 /* ── Skeleton loaders ──────────────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  100% { background-position:  400px 0; }
 }
 
 .skeleton-item,
 .skeleton-task {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   background: #1a1e28;
-  border-radius: 14px;
-  padding: 16px 20px;
+  border-radius: 12px;
+  padding: 14px 16px;
   margin-bottom: 10px;
+
+  @media (min-width: 576px) {
+    gap: 14px;
+    border-radius: 14px;
+    padding: 16px 20px;
+  }
 }
 
 .skeleton-task {
   border-left: 3px solid #2a2f3d;
 }
 
-/* Effet shimmer commun */
 .sk-icon, .sk-line, .sk-bar, .sk-avatar, .sk-left-bar {
   background: linear-gradient(90deg, #1e2330 25%, #262c3d 50%, #1e2330 75%);
   background-size: 400px 100%;
@@ -98,15 +202,24 @@
   border-radius: 6px;
 }
 
-.sk-icon   { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; }
-.sk-avatar { width: 34px; height: 34px; border-radius: 50%;  flex-shrink: 0; }
-.sk-bar    { width: 4px;  height: 40px; border-radius: 4px;  flex-shrink: 0; }
+.sk-icon   { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  @media (min-width: 576px) { width: 40px; height: 40px; border-radius: 12px; }
+}
+.sk-avatar { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  @media (min-width: 576px) { width: 34px; height: 34px; }
+}
+.sk-bar    { width: 4px; height: 36px; border-radius: 4px; flex-shrink: 0;
+  @media (min-width: 576px) { height: 40px; }
+}
 
-.sk-lines  { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.sk-line        { height: 12px; }
+.sk-lines  { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.sk-line        { height: 11px;
+  @media (min-width: 576px) { height: 12px; }
+}
 .sk-line-long   { width: 65%; }
 .sk-line-short  { width: 40%; }
 
+/* ── Hint vide ─────────────────────────────────────────────────── */
 .empty-hint {
   color: #4b5563;
   font-size: 13px;

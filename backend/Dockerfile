@@ -11,12 +11,13 @@ ENV COMPOSER_MEMORY_LIMIT=-1
 
 WORKDIR /var/www/html
 
-# UNIQUEMENT composer (cache Docker)
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-interaction --optimize-autoloader --ignore-platform-reqs
 
-# Copie code SANS artisan commands
 COPY . .
+
+# ✅ Remplace le port 80 par 8080 dans ports.conf
+RUN sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf
 
 # ✅ VirtualHost → public/
 RUN echo '<VirtualHost *:8080>\n\
